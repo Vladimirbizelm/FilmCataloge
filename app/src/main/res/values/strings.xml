@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">FilmCataloge</string>
+    <string name="top_movie_db">Top movie database</string>
+    <string name="top_rated_movies">Top Rated Movies</string>
+    <string name="top_popular_movies">Top Popular Movies</string>
+    <string name="test_rating">7.8</string>
+    <string name="test_film_title">Blade Runner 2049: ACASDAD</string>
+    <string name="test_film_category">test film category</string>
+    <string name="test_film_overview">test film overview \n 8.5 \n ну вот что то такое \n asdasdasdasdadasdasd \n asdagfdiodfgioiogdf \n adsfffffsadffsda \n dsfaaaaa \n asdffffff \n asdffff \n asdf \n asdfasdf</string>
+    <string name="test_film_date">2017-10-04</string>
+    <string name="fav_fragment_title">My favorites</string>
+    <string name="watch_list">Watch later list</string>
+    <string name="favorites_list">Favorites movies list</string>
+    <string name="login_hint">Enter login</string>
+    <string name="password_hint">Enter password</string>
+    <string name="login_button">Login into account</string>
+    <string name="rate_film">Rate</string>
+    <string name="share_film">Share</string>
+    <string name="add_to_watch_later">Watch later</string>
+    <string name="add_to_fav">Favorite</string>
+    <string name="watch">Watch</string>
+    <string name="reviews">Reviews</string>
+    <string name="recommendations">Recommendations</string>
+</resources>

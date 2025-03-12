@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/mainFilmDetailsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/filmPoster"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:contentDescription="@null"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toTopOf="@id/mainFilmDetailsLayout" />
+
+            <TextView
+                android:id="@+id/filmName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                app:layout_constraintEnd_toEndOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toBottomOf="@id/filmPoster"
+                tools:text="TEST" />
+
+            <TextView
+                android:id="@+id/filmMainDetails"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/test_film_title"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toBottomOf="@id/filmName" />
+
+            <Button
+                android:id="@+id/watchButton"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:text="@string/watch"
+                app:layout_constraintEnd_toEndOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toBottomOf="@id/filmMainDetails" />
+
+            <LinearLayout
+                android:id="@+id/buttonsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/watchButton">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageButton
+                        android:id="@+id/rateFilmButton"
+                        style="@style/IconButtonStyle"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/rate_film"
+                        android:scaleType="center"
+                        android:src="@drawable/rate"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/rate_film"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/rateFilmButton" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageButton
+                        android:id="@+id/addToWatchlistButton"
+                        style="@style/IconButtonStyle"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/add_to_watch_later"
+                        android:src="@drawable/save_add"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/add_to_watch_later"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/addToWatchlistButton" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageButton
+                        android:id="@+id/addToFavoriteButton"
+                        style="@style/IconButtonStyle"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/add_to_fav"
+                        android:src="@drawable/favorite"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/add_to_fav"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/addToFavoriteButton" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageButton
+                        android:id="@+id/shareButton"
+                        style="@style/IconButtonStyle"
+                        android:background="@android:color/transparent"
+                        android:contentDescription="@string/share_film"
+                        android:src="@drawable/share"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/share_film"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/shareButton" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:ellipsize="end"
+                android:maxLines="8"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toBottomOf="@id/buttonsLayout"
+                tools:text="@string/test_film_overview" />
+
+            <TextView
+                android:id="@+id/reviewsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/reviews"
+                android:textSize="22sp"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toBottomOf="@id/description" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/reviewsRV"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:contentDescription="@string/reviews"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toBottomOf="@id/reviewsTitle" />
+
+            <TextView
+                android:id="@+id/recommendedFilmTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/recommendations"
+                android:textSize="22sp"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toBottomOf="@id/reviewsRV" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recommendedFilmsRV"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginStart="10dp"
+                app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
+                app:layout_constraintTop_toBottomOf="@id/recommendedFilmTitle" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <ImageButton
+        android:id="@+id/backFromFilmDetails"
+        style="@style/IconButtonStyle"
+        android:layout_marginTop="20dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/rate_film"
+        android:scaleType="center"
+        android:src="@drawable/back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

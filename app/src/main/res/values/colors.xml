@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="nav_background">#121212</color>  <!-- Тёмный фон -->
+    <color name="bottom_nav_icon">#FFFFFF</color>  <!-- Белые иконки -->
+    <color name="bottom_nav_text">#B3B3B3</color>  <!-- Серый текст -->
+</resources>
