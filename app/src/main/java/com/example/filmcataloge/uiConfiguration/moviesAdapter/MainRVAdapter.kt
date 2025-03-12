@@ -52,7 +52,7 @@ class MainRVAdapter(private val categories: List<String>) :
 
     fun setMovies(category: String, movies: List<Movie>) {
         moviesMap[category] = movies
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, movies.size)
     }
 
     fun setListener(listener: OnItemClickListener) {

@@ -27,18 +27,6 @@ import kotlin.math.roundToInt
 class SearchFragment : Fragment() {
 
     private lateinit var binding: FragmentSearchBinding
-    private val baseURL = "https://api.themoviedb.org/3/"
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

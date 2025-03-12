@@ -21,4 +21,9 @@
     <string name="watch">Watch</string>
     <string name="reviews">Reviews</string>
     <string name="recommendations">Recommendations</string>
+
+    <string name="mainPage">Main</string>
+    <string name="search">Search</string>
+    <string name="favorite">Favorite</string>
+    <string name="profile">Profile</string>
 </resources>

@@ -10,9 +10,6 @@ import com.example.filmcataloge.netConfiguration.movieDetais.MovieDetails
 import com.example.filmcataloge.netConfiguration.popularMovies.MoviesResponse
 import com.example.filmcataloge.netConfiguration.recommendedFilms.RecommendedFilms
 import com.example.filmcataloge.netConfiguration.reviewDetails.ReviewDetails
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -82,23 +79,13 @@ interface API {
         @Body favoriteRequest: AddToFavoriteRequest
     ): AddToFavoriteResponse
 
-//    @GET("account/{account_id}/favorite/movies?language=en-US&page=1&sort_by=created_at.asc")
-//    suspend fun getFavoriteMovies(
-//        @Path("account_id") accountId: Int = 21858168,
-//        @Query("api_key") api_key: String = API_KEY,
-//    ): MoviesResponse
+
     @GET("account/{account_id}/favorite/movies?language=en-US&page=1&sort_by=created_at.asc")
         suspend fun getFavoriteMovies(
             @Path("account_id") accountId: Int,
             @Query("api_key") api_key: String = API_KEY,
             @Query("session_id") sessionId: String
         ): MoviesResponse
-//    @POST("account/{account_id}/watchlist")
-//    suspend fun addToWatchlist(
-//        @Path("account_id") accountId: Int,
-//        @Query("api_key") api_key: String = API_KEY,
-//        @Query("session_id") sessionId: String,
-//        @Body watchlistRequest: AddToWatchlistRequest
-//    ): AddToWatchlistResponse
+
 }
 

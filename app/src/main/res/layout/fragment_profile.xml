@@ -42,6 +42,7 @@
         <EditText
             android:id="@+id/userNameLogin"
             android:layout_width="200dp"
+            android:importantForAutofill="no"
             android:inputType="text"
             android:layout_height="50dp"
             app:layout_constraintBottom_toTopOf="@+id/password"
@@ -57,7 +58,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:hint="@string/password_hint"/>
+            android:hint="@string/password_hint"
+            tools:ignore="Autofill" />
         <Button
             android:id="@+id/logIntoAccountBtn"
             android:layout_width="0dp"
@@ -78,6 +80,7 @@
             android:id="@+id/userAvatar"
             android:layout_width="150dp"
             android:layout_height="150dp"
+            android:importantForAccessibility="no"
             app:layout_constraintTop_toTopOf="@id/verified_layout"
             app:layout_constraintStart_toStartOf="@id/verified_layout"
             app:layout_constraintEnd_toEndOf="@id/verified_layout"

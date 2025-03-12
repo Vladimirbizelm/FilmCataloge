@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 class ProfileFragment : Fragment() {
 
     private lateinit var dataStoreManager: DataStoreManager
-    private val baseURL = "https://api.themoviedb.org/3/"
     private lateinit var binding: FragmentProfileBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -38,7 +38,6 @@ import kotlin.math.roundToInt
 
 class FilmDetailsFragment : Fragment() {
 
-    private val baseURL = "https://api.themoviedb.org/3/"
     private lateinit var binding: FragmentFilmDetailsFragmentBinding
     private var filmID: Int? = null
     private lateinit var viewModel: FilmDetailsViewModel
