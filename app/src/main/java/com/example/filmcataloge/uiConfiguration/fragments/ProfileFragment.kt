@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.filmcataloge.databinding.FragmentProfileBinding
 import com.example.filmcataloge.netConfiguration.API
 import com.example.filmcataloge.netConfiguration.RetrofitClient
@@ -48,17 +49,6 @@ class ProfileFragment : Fragment() {
                 }
             }
         }
-        binding.getToken.setOnClickListener {
-            lifecycleScope.launch {
-                val token = dataStoreManager.getRequestToken()
-                Toast.makeText(requireContext(), token ?: "No token found", Toast.LENGTH_SHORT)
-                    .show()
-            }
-        }
-        binding.skip.setOnClickListener {
-            binding.loginInTMDB.visibility = View.GONE
-            binding.loginIntoAccountLayout.visibility = View.VISIBLE
-        }
         binding.logIntoAccountBtn.setOnClickListener {
             val username = binding.userNameLogin.text.toString()
             val password = binding.password.text.toString()
@@ -66,9 +56,13 @@ class ProfileFragment : Fragment() {
                 val sessionId = login(username, password, api)
                 if (sessionId != null) {
                     dataStoreManager.saveSessionId(sessionId)
-                    binding.loginIntoAccountLayout.visibility = View.GONE
-                    binding.loginInTMDB.visibility = View.GONE
-                    binding.verifiedLayout.visibility = View.VISIBLE
+                    binding.apply {
+                        loginIntoAccountLayout.visibility = View.GONE
+                        loginLayout.visibility = View.GONE
+                        verifiedLayout.visibility = View.VISIBLE
+                        userName.text = username
+
+                    }
                 } else {
                     Toast.makeText(requireContext(), "Error", Toast.LENGTH_SHORT).show()
                 }

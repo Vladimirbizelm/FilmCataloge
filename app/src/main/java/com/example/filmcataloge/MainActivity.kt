@@ -23,23 +23,32 @@ const val API_KEY = "9d84a8a1e699e305c54c15e454163cda"
 
 // TODO: (set up an adapter for recyclerViews), change style for buttons, (add some fragments)
 // TODO: (bottom navigation bar, profile page, registration(check API))
-// TODO: add more content to the main page
 // TODO: (work with bottom panel, add logic to the buttons and create more fragments)
 // TODO: (add features to fill with fictive data for films, actors, reviews, etc. while it`s not downloaded yet)
 // TODO: (create an account page) and add account features
 // TODO: (add shared preferences to save user account details and settings) -> added dataStore instead
 // TODO: (make main page fragment)
 // TODO: (check api and rewrite some code)
-// TODO: fill profile page with some activity
-// TODO: add lists for films and accessibility to add it from movieDetails fragment
-// TODO: search panel
-// TODO: https://developer.themoviedb.org/reference/movie-now-playing-list
-// TODO: optimize date time in filmDetailsFragment and reviewsAdapter
 // TODO: (add btns logic for filmDetailsFragment)
-// TODO: check all of the possible exceptions(highly necessary)
-
+// TODO: (search panel)
+// TODO: https://developer.themoviedb.org/reference/movie-now-playing-list
 // TODO: (НАСТРОИТЬ МАСШТАБИРУЕМОСТЬ -> remake all layouts use nested rv)
 
+// TODO: fill profile page with some activity
+// TODO: add lists for films and accessibility to add it from movieDetails fragment
+// TODO: add more content to the main page
+// TODO: optimize date time in filmDetailsFragment and reviewsAdapter
+// TODO: check all of the possible exceptions(highly necessary)
+// TODO: add avatar to userAcc layout
+// TODO: refactor shitty strings file...
+// TODO: try to add customView for circle diagram xd
+// TODO: option buttons in fragment film details - add logic 
+// TODO: add for fav layout that shows u need to log in
+// TODO: bug open film detail from favorites adn back
+// TODO: make undo for fav button
+// TODO: add fragment for more options button in movie detail fragment
+
+// TODO: import btns icons for detail frag and make logic to change it if it was pressed 
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
 
@@ -150,18 +159,36 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().apply {
             add(R.id.fragmentHolder, filmDetailsFragment, "filmDetails")
             hide(activeFragment)
-            show(filmDetailsFragment)
         }.addToBackStack("filmDetails").commit()
         activeFragment = filmDetailsFragment
     }
 
-    fun hideFilmDetailsFragment() {
+    fun hideFilmDetailsFragment(fragmentName: String) {
         supportFragmentManager.popBackStack()
+        val targetFragment = when (fragmentName) {
+            "home" -> homeFragment
+            "profile" -> profileFragment
+            "search" -> searchFragment
+            "favorites" -> favoritesFragment
+            else -> homeFragment
+        }
+
         supportFragmentManager.beginTransaction().apply {
             hide(activeFragment)
-            show(homeFragment)
+            show(targetFragment)
         }.commit()
-        activeFragment = homeFragment
+
+        activeFragment = targetFragment
+
+        val menuItemId = when (fragmentName) {
+            "home" -> R.id.nav_home
+            "profile" -> R.id.nav_profile
+            "search" -> R.id.nav_search
+            "favorites" -> R.id.nav_favorites
+            else -> R.id.nav_home
+        }
+        binding.bottomNavigation.selectedItemId = menuItemId
+
     }
 
     private fun handleDeepLink(intent: Intent?) {

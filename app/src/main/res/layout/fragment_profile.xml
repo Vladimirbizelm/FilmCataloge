@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".uiConfiguration.fragments.ProfileFragment">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/login_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="visible">
-        <Button
-            android:id="@+id/getToken"
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/loginLayoutDescribesToLoginTMDB"
+            app:layout_constraintBottom_toTopOf="@id/loginInTMDB"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
+
         <Button
             android:id="@+id/loginInTMDB"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
+            android:text="@string/loginTMDBButton"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-        <Button
-            android:id="@+id/skip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -39,62 +40,238 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/login_into_account"
+            app:layout_constraintBottom_toTopOf="@id/userNameLogin"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <EditText
             android:id="@+id/userNameLogin"
             android:layout_width="200dp"
+            android:layout_height="50dp"
+            android:hint="@string/login_hint"
             android:importantForAutofill="no"
             android:inputType="text"
-            android:layout_height="50dp"
             app:layout_constraintBottom_toTopOf="@+id/password"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:hint="@string/login_hint"/>
+            app:layout_constraintStart_toStartOf="parent" />
+
         <EditText
             android:id="@+id/password"
             android:layout_width="200dp"
-            android:inputType="textPassword"
             android:layout_height="50dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             android:hint="@string/password_hint"
+            android:inputType="textPassword"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="Autofill" />
+
         <Button
             android:id="@+id/logIntoAccountBtn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/userNameLogin"
+            android:text="@string/login_button"
             app:layout_constraintEnd_toEndOf="@id/userNameLogin"
-            app:layout_constraintTop_toBottomOf="@id/password"
-            android:text="@string/login_button"/>
+            app:layout_constraintStart_toStartOf="@id/userNameLogin"
+            app:layout_constraintTop_toBottomOf="@id/password" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ScrollView
         android:id="@+id/verified_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone">
-        <ImageView
-            android:id="@+id/userAvatar"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:importantForAccessibility="no"
-            app:layout_constraintTop_toTopOf="@id/verified_layout"
-            app:layout_constraintStart_toStartOf="@id/verified_layout"
-            app:layout_constraintEnd_toEndOf="@id/verified_layout"
-            android:layout_margin="20dp"
-            android:src="@drawable/baseline_account_circle_24"/>
-        <TextView
-            android:id="@+id/userName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/userAvatar"
-            app:layout_constraintStart_toStartOf="@id/verified_layout"
-            app:layout_constraintEnd_toEndOf="@id/verified_layout"
-            android:textSize="22sp"
-            tools:text="testUserName"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/verified_layoutNested"
+            >
+
+            <ImageView
+                android:id="@+id/userAvatar"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_margin="20dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/baseline_account_circle_24"
+                app:layout_constraintEnd_toEndOf="@id/verified_layoutNested"
+                app:layout_constraintStart_toStartOf="@id/verified_layoutNested"
+                app:layout_constraintTop_toTopOf="@id/verified_layoutNested" />
+
+            <TextView
+                android:id="@+id/userName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                app:layout_constraintEnd_toEndOf="@id/verified_layoutNested"
+                app:layout_constraintStart_toStartOf="@id/verified_layoutNested"
+                app:layout_constraintTop_toBottomOf="@id/userAvatar"
+                tools:text="testUserName" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/statisticsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/userName">
+
+                <ImageView
+                    android:id="@+id/statisticsWatchNowColor"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/ic_launcher_background"
+                    app:layout_constraintBottom_toBottomOf="@id/statisticsWatchNow"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/statisticsWatchNow" />
+
+                <TextView
+                    android:id="@+id/statisticsWatchNow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/watch_now"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toEndOf="@id/statisticsWatchNowColor"
+                    app:layout_constraintTop_toTopOf="@id/statisticsLayout" />
+
+                <TextView
+                    android:id="@+id/statisticsWatchNowCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/statisticsWatchNow"
+                    app:layout_constraintTop_toTopOf="@id/statisticsWatchNow"
+                    tools:text="5" />
+
+                <ImageView
+                    android:id="@+id/statisticsFavoritesColor"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/ic_launcher_background"
+                    app:layout_constraintBottom_toBottomOf="@id/statisticsFavorites"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/statisticsFavorites" />
+
+                <TextView
+                    android:id="@+id/statisticsFavorites"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/favorites"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toEndOf="@id/statisticsFavoritesColor"
+                    app:layout_constraintTop_toBottomOf="@id/statisticsWatchNow" />
+
+                <TextView
+                    android:id="@+id/statisticsFavoritesCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/statisticsFavorites"
+                    app:layout_constraintTop_toTopOf="@id/statisticsFavorites"
+                    tools:text="5" />
+
+                <ImageView
+                    android:id="@+id/statisticsWatchLaterColor"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/ic_launcher_background"
+                    app:layout_constraintBottom_toBottomOf="@id/statisticsWatchLater"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/statisticsWatchLater" />
+
+                <TextView
+                    android:id="@+id/statisticsWatchLater"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/watch_later"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toEndOf="@id/statisticsWatchLaterColor"
+                    app:layout_constraintTop_toBottomOf="@id/statisticsFavorites" />
+
+                <TextView
+                    android:id="@+id/statisticsWatchLaterCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/statisticsWatchLater"
+                    app:layout_constraintTop_toTopOf="@id/statisticsWatchLater"
+                    tools:text="5" />
+
+                <ImageView
+                    android:id="@+id/statisticsWatchedColor"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/ic_launcher_background"
+                    app:layout_constraintBottom_toBottomOf="@id/statisticsWatched"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/statisticsWatched" />
+
+                <TextView
+                    android:id="@+id/statisticsWatched"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/watched"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toEndOf="@id/statisticsWatchedColor"
+                    app:layout_constraintTop_toBottomOf="@id/statisticsWatchLater" />
+
+                <TextView
+                    android:id="@+id/statisticsWatchedCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@id/statisticsWatched"
+                    app:layout_constraintTop_toTopOf="@id/statisticsWatched"
+                    tools:text="5" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/titleWatchedMovies"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/history"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/statisticsLayout" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/watchedMoviesList"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:layout_margin="10dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/titleWatchedMovies" />
+            <Button
+                android:id="@+id/showMoreWatchedMovies"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/watchedMoviesList"
+                app:layout_constraintEnd_toEndOf="@id/watchedMoviesList"
+                style="@style/Widget.Material3.Button"
+                android:text="@string/show_more"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

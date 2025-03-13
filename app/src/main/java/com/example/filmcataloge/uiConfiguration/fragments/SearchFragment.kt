@@ -1,13 +1,16 @@
 package com.example.filmcataloge.uiConfiguration.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.util.query
 import com.example.filmcataloge.API_KEY
 import com.example.filmcataloge.MainActivity
 
@@ -16,6 +19,7 @@ import com.example.filmcataloge.netConfiguration.API
 import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.popularMovies.Movie
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.SearchFilmsAdapter
+import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -27,16 +31,17 @@ import kotlin.math.roundToInt
 class SearchFragment : Fragment() {
 
     private lateinit var binding: FragmentSearchBinding
+    private lateinit var viewModel: FilmDetailsViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
-        val adapter = setUpAdapter()
 
+        val adapter = setUpAdapter()
         val api = RetrofitClient.api
-        // TODO: fix it
+        viewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
         binding.searchBar.setOnQueryTextListener( object : OnQueryTextListener,
             SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -45,8 +50,10 @@ class SearchFragment : Fragment() {
                 }
                 return true
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText.isNullOrEmpty()){
+                    adapter.setMovies(emptyList())
+                }
                 return true
             }
         }
@@ -69,6 +76,7 @@ class SearchFragment : Fragment() {
         adapter.setListener(
             object : SearchFilmsAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, movie: Movie) {
+                    viewModel.previousFragment.value = "search"
                     (activity as MainActivity).showFilmDetailsFragment(movie.id)
                 }
             }

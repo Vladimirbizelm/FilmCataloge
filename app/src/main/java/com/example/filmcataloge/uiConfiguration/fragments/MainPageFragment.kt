@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.filmcataloge.API_KEY
 import com.example.filmcataloge.MainActivity
@@ -16,6 +17,7 @@ import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.popularMovies.Movie
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.MainRVAdapter
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.NestedRVAdapter
+import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -28,6 +30,7 @@ class MainPageFragment : Fragment() {
 
     private val categories: ArrayList<String> = arrayListOf("Popular", "Top Rated", "Upcoming")
     private lateinit var binding: FragmentMainPageBinding
+    private lateinit var viewModel: FilmDetailsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +40,7 @@ class MainPageFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        viewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
         binding = FragmentMainPageBinding.inflate(inflater, container, false)
         val api = RetrofitClient.api
         val adapter = setUpAdapter()
@@ -61,7 +65,7 @@ class MainPageFragment : Fragment() {
             })
             setNestedItemClickListener(object : NestedRVAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, movie: Movie) {
-                    Log.d("MainActivity", "onItemNestedRVClick: $movie")
+                    viewModel.previousFragment.value = "home"
                     (activity as MainActivity).showFilmDetailsFragment(movie.id)
                 }
             })

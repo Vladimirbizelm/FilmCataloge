@@ -13,14 +13,13 @@ import com.example.filmcataloge.netConfiguration.popularMovies.Movie
 
 class SearchFilmsAdapter(): RecyclerView.Adapter<SearchFilmsAdapter.ViewHolder>() {
 
-    private val movies: List<Movie> = ArrayList()
+    private var movies: List<Movie> = ArrayList()
     private var listener: OnItemClickListener? = null
 
     class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
 
         private val binding: SearchMovieItemBinding = SearchMovieItemBinding.bind(view)
 
-        @SuppressLint("SetTextI18n")
         fun bind(movie: Movie, listener: OnItemClickListener?) = with(binding){
 
             val requestOptions = RequestOptions()
@@ -35,7 +34,8 @@ class SearchFilmsAdapter(): RecyclerView.Adapter<SearchFilmsAdapter.ViewHolder>(
                 .into(filmPoster)
 
             filmTitle.text = movie.title
-            originalTitleAndYear.text = movie.original_title + " " + movie.release_date
+            val title = movie.original_title + " " + movie.release_date
+            originalTitleAndYear.text = title
             ratingOfFilm.text = movie.vote_average.toString()
 
             itemView.setOnClickListener {
@@ -58,7 +58,7 @@ class SearchFilmsAdapter(): RecyclerView.Adapter<SearchFilmsAdapter.ViewHolder>(
         holder.bind(movie, listener)
     }
     fun setMovies(movies: List<Movie>){
-        (this.movies as ArrayList).addAll(movies)
+        this.movies = movies
         notifyItemRangeChanged(0, movies.size)
     }
 

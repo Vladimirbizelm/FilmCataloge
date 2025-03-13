@@ -34,7 +34,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 // TODO: (set up RV), (adapter for reviews), actors, (recommended films )
-// TODO:( add some images for films https://developer.themoviedb.org/reference/movie-images )
+// TODO: add some images for films https://developer.themoviedb.org/reference/movie-images
 
 class FilmDetailsFragment : Fragment() {
 
@@ -47,7 +47,7 @@ class FilmDetailsFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         filmID = arguments?.getInt("filmID")
-        viewModel = ViewModelProvider(this)[FilmDetailsViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
         dataStoreManager = DataStoreManager(requireContext())
     }
 
@@ -55,20 +55,13 @@ class FilmDetailsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.mainFilmDetailsLayout.visibility = View.VISIBLE
-
         binding.backFromFilmDetails.setOnClickListener {
-            (activity as MainActivity).hideFilmDetailsFragment()
+            (activity as MainActivity).hideFilmDetailsFragment(viewModel.previousFragment.value.toString())
         }
         binding.addToFavoriteButton.setOnClickListener {
             lifecycleScope.launch {
                 filmID?.let { id ->
                     addToFavorite(id, RetrofitClient.api)
-                }
-                val api = RetrofitClient.api
-                val sessionId = dataStoreManager.getSessionId()
-                val list = getFavoritePageMoviesCollections(api, sessionId)
-                if (list != null) {
-                    Log.d("FavoritesFragment", "onCreateView: $list")
                 }
             }
         }
@@ -88,33 +81,6 @@ class FilmDetailsFragment : Fragment() {
     private fun restoreOrCreateFragmentView(inflater: LayoutInflater, container: ViewGroup?, api: API) {
         binding = FragmentFilmDetailsFragmentBinding.inflate(inflater, container, false)
         val recommendedFilmsAdapter = NestedRVAdapter()
-        viewModel.movieDetails.observe(viewLifecycleOwner) { movieDetails ->
-            updateUI(movieDetails)
-        }
-
-        viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
-            val reviewsAdapter = ReviewsAdapter()
-            reviewsAdapter.setReviews(reviews)
-            binding.reviewsRV.adapter = reviewsAdapter
-        }
-        viewModel.recommendedFilms.observe(viewLifecycleOwner) { movies ->
-            recommendedFilmsAdapter.setMovies(movies)
-            binding.recommendedFilmsRV.adapter = recommendedFilmsAdapter
-        }
-
-        if (viewModel.movieDetails.value == null) {
-            filmID?.let { id ->
-                lifecycleScope.launch {
-                    val movieDetails = fetchMovieDetails(id, api)
-                    viewModel.movieDetails.postValue(movieDetails)
-                    val reviews = getMovieReviews(id, api)
-                    viewModel.reviews.postValue(reviews?.results)
-                    val recommendedMovies = getMovieRecommendations(id, api)
-                    viewModel.recommendedFilms.postValue(recommendedMovies)
-                }
-            }
-        }
-
         binding.reviewsRV.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         val reviewsAdapter = ReviewsAdapter()
@@ -123,6 +89,7 @@ class FilmDetailsFragment : Fragment() {
         binding.recommendedFilmsRV.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.recommendedFilmsRV.adapter = recommendedFilmsAdapter
+
         filmID?.let { id ->
             lifecycleScope.launch {
                 val reviews = getMovieReviews(id, api)
@@ -147,6 +114,7 @@ class FilmDetailsFragment : Fragment() {
             override fun onItemClick(position: Int, movie: Movie) {
                 Toast.makeText(requireContext(), movie.title, Toast.LENGTH_SHORT).show()
                 binding.mainFilmDetailsLayout.visibility = View.GONE
+                Toast.makeText(requireContext(), "asd", Toast.LENGTH_SHORT).show()
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragmentHolder, newInstance(movie.id))
                     .addToBackStack("movieDetails").commit()
@@ -230,8 +198,6 @@ class FilmDetailsFragment : Fragment() {
             }
         }
     }
-
-
 
     private fun updateUI(movieDetails: MovieDetails) {
         binding.apply {

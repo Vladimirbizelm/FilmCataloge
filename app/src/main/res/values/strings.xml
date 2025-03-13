@@ -18,12 +18,21 @@
     <string name="share_film">Share</string>
     <string name="add_to_watch_later">Watch later</string>
     <string name="add_to_fav">Favorite</string>
+    <string name="more_options">More</string>
     <string name="watch">Watch</string>
     <string name="reviews">Reviews</string>
     <string name="recommendations">Recommendations</string>
-
     <string name="mainPage">Main</string>
     <string name="search">Search</string>
     <string name="favorite">Favorite</string>
     <string name="profile">Profile</string>
+    <string name="loginLayoutDescribesToLoginTMDB">To open all functions authorise via the TMDB account \n You will be redirected to browser</string>
+    <string name="loginTMDBButton">Log in TMDB</string>
+    <string name="login_into_account">Log in with your TMDB account</string>
+    <string name="watch_now">Watch now</string>
+    <string name="watch_later">Watch later</string>
+    <string name="favorites">Favorites</string>
+    <string name="watched">Watched</string>
+    <string name="history">History</string>
+    <string name="show_more">Show more </string>
 </resources>
