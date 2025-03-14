@@ -11,7 +11,14 @@ class FilmDetailsViewModel : ViewModel() {
     private val _favoriteMoviesUpdated = MutableLiveData<Event<Boolean>>()
     val favoriteMoviesUpdated: LiveData<Event<Boolean>> = _favoriteMoviesUpdated
 
+    private val _watchLaterMoviesUpdated = MutableLiveData<Event<Boolean>>()
+    val watchLaterMoviesUpdated: LiveData<Event<Boolean>> = _watchLaterMoviesUpdated
+
     fun notifyFavoriteMoviesUpdated() {
         _favoriteMoviesUpdated.value = Event(true)
+        _watchLaterMoviesUpdated.value = Event(true)
     }
+
+
+
 }

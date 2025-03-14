@@ -35,17 +35,62 @@
                 app:layout_constraintTop_toBottomOf="@id/filmPoster"
                 tools:text="TEST" />
 
-            <TextView
-                android:id="@+id/filmMainDetails"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/filmDescriptionLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="@string/test_film_title"
-                android:textSize="15sp"
-                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="@id/mainFilmDetailsLayout"
                 app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
-                app:layout_constraintTop_toBottomOf="@id/filmName" />
+                app:layout_constraintTop_toBottomOf="@id/filmName">
+
+                <LinearLayout
+                    android:id="@+id/hui"
+                    app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout"
+                    android:layout_width="wrap_content"
+                    android:gravity="center"
+                    app:layout_constraintStart_toStartOf="@id/filmDescriptionLayout"
+                    app:layout_constraintEnd_toEndOf="@id/filmDescriptionLayout"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/ratingOfFilm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:gravity="center"
+                        app:layout_constraintStart_toStartOf="@id/filmDescriptionLayout"
+                        app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout"
+                        app:layout_constraintEnd_toEndOf="@id/filmDescriptionLayout"
+                        tools:text="9.1" />
+                    <TextView
+                        android:id="@+id/reviewsCounter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout"
+                        app:layout_constraintStart_toEndOf="@id/ratingOfFilm"
+                        tools:text="1899"/>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="wrap_content"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/review_icon"
+                        app:layout_constraintBottom_toBottomOf="@id/reviewsCounter"
+                        app:layout_constraintStart_toEndOf="@id/reviewsCounter"
+                        app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/filmMainDetails"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    app:layout_constraintTop_toBottomOf="@id/hui"
+                    app:layout_constraintStart_toStartOf="@id/filmDescriptionLayout"
+                    app:layout_constraintEnd_toEndOf="@id/filmDescriptionLayout"
+                    tools:text="test"
+                    android:layout_marginStart="5dp"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <Button
                 android:id="@+id/watchButton"
@@ -54,7 +99,7 @@
                 android:text="@string/watch"
                 app:layout_constraintEnd_toEndOf="@id/mainFilmDetailsLayout"
                 app:layout_constraintStart_toStartOf="@id/mainFilmDetailsLayout"
-                app:layout_constraintTop_toBottomOf="@id/filmMainDetails" />
+                app:layout_constraintTop_toBottomOf="@id/filmDescriptionLayout" />
 
             <LinearLayout
                 android:id="@+id/buttonsLayout"

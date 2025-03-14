@@ -49,7 +49,7 @@ const val API_KEY = "9d84a8a1e699e305c54c15e454163cda"
 // TODO: add fragment for more options button in movie detail fragment
 
 // TODO: import btns icons for detail frag and make logic to change it if it was pressed 
-
+// TODO: add splash screen 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
 
 class MainActivity : AppCompatActivity() {

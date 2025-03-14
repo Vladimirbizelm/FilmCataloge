@@ -1,7 +1,9 @@
 package com.example.filmcataloge.netConfiguration
 
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.AddToFavoriteRequest
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.AddToFavoriteResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToFavorite.AddToFavoriteRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToFavorite.AddToFavoriteResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToWatchList.AddToWatchListRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToWatchList.AddToWatchListResponse
 import com.example.filmcataloge.netConfiguration.createSession.LoginRequest
 import com.example.filmcataloge.netConfiguration.createSession.RequestTokenResponse
 import com.example.filmcataloge.netConfiguration.createSession.SessionRequest
@@ -71,6 +73,7 @@ interface API {
         @Body sessionRequest: SessionRequest
     ): SessionResponse
 
+    //fav list
     @POST("account/{account_id}/favorite")
     suspend fun addToFavorite(
         @Path("account_id") accountId: Int,
@@ -79,13 +82,27 @@ interface API {
         @Body favoriteRequest: AddToFavoriteRequest
     ): AddToFavoriteResponse
 
-
     @GET("account/{account_id}/favorite/movies?language=en-US&page=1&sort_by=created_at.asc")
-        suspend fun getFavoriteMovies(
-            @Path("account_id") accountId: Int,
-            @Query("api_key") api_key: String = API_KEY,
-            @Query("session_id") sessionId: String
-        ): MoviesResponse
+    suspend fun getFavoriteMovies(
+        @Path("account_id") accountId: Int,
+        @Query("api_key") api_key: String = API_KEY,
+        @Query("session_id") sessionId: String
+    ): MoviesResponse
 
+    //watch later list
+    @POST("account/{account_id}/watchlist")
+    suspend fun addToWatchList(
+        @Path("account_id") accountId: Int,
+        @Query("api_key") api_key: String = API_KEY,
+        @Query("session_id") sessionId: String,
+        @Body watchListRequest: AddToWatchListRequest
+    ) : AddToWatchListResponse
+
+    @GET("account/{account_id}/watchlist/movies?language=en-US&page=1&sort_by=created_at.asc")
+    suspend fun getWatchList(
+        @Path("account_id") accountId: Int,
+        @Query("api_key") api_key: String = API_KEY,
+        @Query("session_id") sessionId: String
+    ): MoviesResponse
 }
 

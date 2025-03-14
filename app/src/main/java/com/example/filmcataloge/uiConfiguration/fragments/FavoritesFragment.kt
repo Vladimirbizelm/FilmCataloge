@@ -25,19 +25,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-// TODO: get lists from personal data of user 
-
 class FavoritesFragment : Fragment() {
 
     private lateinit var binding: FragmentFavoritesBinding
-    private val categories = listOf("Favorite movies", "Watch later")
+    private val categories = listOf("Favorite", "Watch later")
     private lateinit var dataStoreManager: DataStoreManager
     private lateinit var filmDetailsViewModel: FilmDetailsViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dataStoreManager = DataStoreManager(requireContext())
-        filmDetailsViewModel = ViewModelProvider(requireActivity()).get(FilmDetailsViewModel::class.java)
+        filmDetailsViewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
 
     }
 
@@ -48,27 +47,45 @@ class FavoritesFragment : Fragment() {
 
         lifecycleScope.launch {
             val sessionId = dataStoreManager.getSessionId()
-            val list = getFavoritePageMoviesCollections(api, sessionId)
-            Log.d("FavoritesFragment", "onCreateView: $list")
-            if (list != null) {
-                Log.d("FavoritesFragment", "onCreateView: $list")
-                adapter.setMovies("Favorite", list)
+            val listOfFavoriteMovies = getFavoritePageMoviesCollections(api, sessionId)
+            val listOfWatchLaterMovies = getWatchLaterMoviesCollection(api, sessionId)
+            if (listOfFavoriteMovies != null && listOfWatchLaterMovies != null) {
+                adapter.setMovies("Favorite", listOfFavoriteMovies)
+                adapter.setMovies("Watch later", listOfWatchLaterMovies)
             }
         }
+
         filmDetailsViewModel.favoriteMoviesUpdated.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { updated ->
                 if (updated) {
                     lifecycleScope.launch {
                         val sessionId = dataStoreManager.getSessionId()
-                        Log.d("FavoritesFragment", "onViewCreated: $sessionId")
-                        val list = getFavoritePageMoviesCollections(api, sessionId)
-                        if (list != null) {
-                            adapter.setMovies("Favorite movies", list)
+                        val listOfFavoriteMovies = getFavoritePageMoviesCollections(api, sessionId)
+                        val listOfWatchLaterMovies = getWatchLaterMoviesCollection(api, sessionId)
+                        if (listOfFavoriteMovies != null && listOfWatchLaterMovies != null) {
+                            adapter.setMovies("Favorite", listOfFavoriteMovies)
+                            adapter.setMovies("Watch later", listOfWatchLaterMovies)
                         }
                     }
                 }
             }
         }
+        filmDetailsViewModel.watchLaterMoviesUpdated.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { updated ->
+                if (updated) {
+                    lifecycleScope.launch {
+                        val sessionId = dataStoreManager.getSessionId()
+                        val listOfFavoriteMovies = getFavoritePageMoviesCollections(api, sessionId)
+                        val listOfWatchLaterMovies = getWatchLaterMoviesCollection(api, sessionId)
+                        if (listOfFavoriteMovies != null && listOfWatchLaterMovies != null) {
+                            adapter.setMovies("Favorite", listOfFavoriteMovies)
+                            adapter.setMovies("Watch later", listOfWatchLaterMovies)
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     override fun onCreateView(
@@ -89,6 +106,7 @@ class FavoritesFragment : Fragment() {
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         val adapter = MainRVAdapter(categories)
         binding.mainRV.adapter = adapter
+
         adapter.setListener(
             object : MainRVAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, category: String) {
@@ -96,10 +114,11 @@ class FavoritesFragment : Fragment() {
                 }
             }
         )
+
         adapter.setNestedItemClickListener(
             object : NestedRVAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, movie: Movie) {
-                    Log.d("MainActivity", "onItemNestedRVClick: $movie")
+                    filmDetailsViewModel.previousFragment.value = "favorites"
                     (activity as MainActivity).showFilmDetailsFragment(movie.id)
                 }
             }
@@ -111,6 +130,25 @@ class FavoritesFragment : Fragment() {
         return withContext(Dispatchers.IO) {
             try {
                 val a = api.getFavoriteMovies(21858168, API_KEY, sessionId ?: "").results
+                a.forEach {
+                    it.vote_average = (it.vote_average * 10).toInt() / 10.0
+                }
+                Log.d("FavoritesFragment", "getFavoritePageMoviesCollections: $a")
+                a
+            } catch (e: Exception) {
+                Log.e("FavoritesFragment", "Error fetching fav movies", e)
+                null
+            }
+        }
+    }
+
+    private suspend fun getWatchLaterMoviesCollection(api: API, sessionId: String?): List<Movie>? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val a = api.getWatchList(21858168, API_KEY, sessionId ?: "").results
+                a.forEach {
+                    it.vote_average = (it.vote_average * 10).toInt() / 10.0
+                }
                 Log.d("FavoritesFragment", "getFavoritePageMoviesCollections: $a")
                 a
             } catch (e: Exception) {

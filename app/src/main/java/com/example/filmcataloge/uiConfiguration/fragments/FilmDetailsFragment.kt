@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -18,7 +19,8 @@ import com.example.filmcataloge.MainActivity
 import com.example.filmcataloge.R
 import com.example.filmcataloge.databinding.FragmentFilmDetailsFragmentBinding
 import com.example.filmcataloge.netConfiguration.API
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.AddToFavoriteRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToFavorite.AddToFavoriteRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToWatchList.AddToWatchListRequest
 import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.dataStoreManager.DataStoreManager
 import com.example.filmcataloge.netConfiguration.movieDetais.MovieDetails
@@ -35,6 +37,7 @@ import kotlin.math.roundToInt
 
 // TODO: (set up RV), (adapter for reviews), actors, (recommended films )
 // TODO: add some images for films https://developer.themoviedb.org/reference/movie-images
+// TODO: fix updateUI fun
 
 class FilmDetailsFragment : Fragment() {
 
@@ -45,7 +48,6 @@ class FilmDetailsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         filmID = arguments?.getInt("filmID")
         viewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
         dataStoreManager = DataStoreManager(requireContext())
@@ -54,17 +56,64 @@ class FilmDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.mainFilmDetailsLayout.visibility = View.VISIBLE
         binding.backFromFilmDetails.setOnClickListener {
             (activity as MainActivity).hideFilmDetailsFragment(viewModel.previousFragment.value.toString())
         }
+
         binding.addToFavoriteButton.setOnClickListener {
             lifecycleScope.launch {
-                filmID?.let { id ->
-                    addToFavorite(id, RetrofitClient.api)
+                val favCollection = getFavoritePageMoviesCollections(
+                    RetrofitClient.api,
+                    dataStoreManager.getSessionId()
+                )
+                Log.d("FilmDetailsFragment", "onViewCreated: $favCollection")
+                if (dataStoreManager.getSessionId() != null && favCollection != null) {
+                    filmID?.let {
+                        addToFavorite(
+                            it,
+                            RetrofitClient.api,
+                            isAddedToTheCollection(favCollection)
+                        )
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Please authenticate", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
+
+        binding.addToWatchlistButton.setOnClickListener {
+
+            lifecycleScope.launch {
+                val watchListCollection = getWatchListMoviesCollection(
+                    RetrofitClient.api,
+                    dataStoreManager.getSessionId()
+                )
+                Log.d("FilmDetailsFragment", "onViewCreated: $watchListCollection")
+                if (dataStoreManager.getSessionId() != null && watchListCollection != null) {
+                    filmID?.let {
+                        addToWatchList(
+                            it,
+                            RetrofitClient.api,
+                            isAddedToTheCollection(watchListCollection)
+                        )
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Please authenticate", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        }
+
+    }
+
+    private fun isAddedToTheCollection(collection: ArrayList<Movie>): Boolean {
+        for (i in collection) {
+            if (i.id == filmID) {
+                return true
+            }
+        }
+        return false
     }
 
 
@@ -77,8 +126,11 @@ class FilmDetailsFragment : Fragment() {
     }
 
 
-
-    private fun restoreOrCreateFragmentView(inflater: LayoutInflater, container: ViewGroup?, api: API) {
+    private fun restoreOrCreateFragmentView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        api: API
+    ) {
         binding = FragmentFilmDetailsFragmentBinding.inflate(inflater, container, false)
         val recommendedFilmsAdapter = NestedRVAdapter()
         binding.reviewsRV.layoutManager =
@@ -110,55 +162,217 @@ class FilmDetailsFragment : Fragment() {
             }
         }
 
+        updateCollectionsButtonsUI()
+
         recommendedFilmsAdapter.setListener(object : NestedRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, movie: Movie) {
-                Toast.makeText(requireContext(), movie.title, Toast.LENGTH_SHORT).show()
-                binding.mainFilmDetailsLayout.visibility = View.GONE
-                Toast.makeText(requireContext(), "asd", Toast.LENGTH_SHORT).show()
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragmentHolder, newInstance(movie.id))
-                    .addToBackStack("movieDetails").commit()
+                viewModel.previousFragment.value = "favorites"
+                (activity as MainActivity).showFilmDetailsFragment(movie.id)
             }
         })
 
     }
-    private suspend fun getFavoritePageMoviesCollections(api: API, sessionId: String?): ArrayList<Movie>? {
+
+    private fun updateCollectionsButtonsUI() {
+        lifecycleScope.launch {
+            val favCollection = getFavoritePageMoviesCollections(
+                RetrofitClient.api,
+                dataStoreManager.getSessionId()
+            )
+            if (favCollection != null) {
+                binding.addToFavoriteButton.setImageResource(
+                    if (isAddedToTheCollection(favCollection)) R.drawable.added_to_fav else R.drawable.favorite
+                )
+            }
+
+            val watchListCollection = getWatchListMoviesCollection(
+                RetrofitClient.api,
+                dataStoreManager.getSessionId()
+            )
+            if (watchListCollection != null) {
+                binding.addToWatchlistButton.setImageResource(
+                    if (isAddedToTheCollection(watchListCollection)) R.drawable.save_add_added else R.drawable.save_add
+                )
+            }
+        }
+    }
+
+    private suspend fun getFavoritePageMoviesCollections(
+        api: API,
+        sessionId: String?
+    ): ArrayList<Movie>? {
         return withContext(Dispatchers.IO) {
             try {
                 api.getFavoriteMovies(21858168, API_KEY, sessionId ?: "").results
             } catch (e: Exception) {
-                Log.e("FavoritesFragment", "Error fetching movie reviews", e)
+                Log.e("FavoritesFragment", "Error fetching movies", e)
                 null
             }
         }
     }
 
-    private suspend fun addToFavorite(movieId: Int, api: API) {
+    private suspend fun getWatchListMoviesCollection(
+        api: API,
+        sessionId: String?
+    ): ArrayList<Movie>? {
+        return withContext(Dispatchers.IO) {
+            try {
+                api.getWatchList(21858168, API_KEY, sessionId ?: "").results
+            } catch (e: Exception) {
+                Log.e("FavoritesFragment", "Error fetching movies", e)
+                null
+            }
+        }
+    }
+
+    private suspend fun addToFavorite(movieId: Int, api: API, isAddedToFavorite: Boolean) {
         val sessionId = dataStoreManager.getSessionId()
         if (sessionId != null) {
-            try {
-                val favoriteRequest = AddToFavoriteRequest(
-                    media_type = "movie",
-                    media_id = movieId,
-                    favorite = true
-                )
-                val response = api.addToFavorite(
-                    accountId = 21858168,
-                    sessionId = sessionId,
-                    favoriteRequest = favoriteRequest
-                )
-                if (response.success) {
-                    Toast.makeText(requireContext(), "Added to favorites", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), "Failed to add to favorites", Toast.LENGTH_SHORT).show()
+            if (isAddedToFavorite) {
+                try {
+                    binding.addToFavoriteButton.setImageResource(R.drawable.favorite)
+                    val favoriteRequest = AddToFavoriteRequest(
+                        media_type = "movie",
+                        media_id = movieId,
+                        favorite = false
+                    )
+                    val response = api.addToFavorite(
+                        accountId = 21858168,
+                        sessionId = sessionId,
+                        favoriteRequest = favoriteRequest
+                    )
+                    if (response.success) {
+                        Toast.makeText(requireContext(), "Added to favorites", Toast.LENGTH_SHORT)
+                            .show()
+                        viewModel.notifyFavoriteMoviesUpdated()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Failed to add to favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("FilmDetailsFragment", "Error adding to favorites", e)
+                    Toast.makeText(
+                        requireContext(),
+                        "Error adding to favorites",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-            } catch (e: Exception) {
-                Log.e("FilmDetailsFragment", "Error adding to favorites", e)
-                Toast.makeText(requireContext(), "Error adding to favorites", Toast.LENGTH_SHORT).show()
+            } else {
+                try {
+                    binding.addToFavoriteButton.setImageResource(R.drawable.added_to_fav)
+                    val favoriteRequest = AddToFavoriteRequest(
+                        media_type = "movie",
+                        media_id = movieId,
+                        favorite = true
+                    )
+                    val response = api.addToFavorite(
+                        accountId = 21858168,
+                        sessionId = sessionId,
+                        favoriteRequest = favoriteRequest
+                    )
+                    if (response.success) {
+                        Toast.makeText(requireContext(), "Added to favorites", Toast.LENGTH_SHORT)
+                            .show()
+                        viewModel.notifyFavoriteMoviesUpdated()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Failed to add to favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("FilmDetailsFragment", "Error adding to favorites", e)
+                    Toast.makeText(
+                        requireContext(),
+                        "Error adding to favorites",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
+
         } else {
             Toast.makeText(requireContext(), "Session ID not found", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private suspend fun addToWatchList(movieId: Int, api: API, isAddedToWatchList: Boolean) {
+        val sessionId = dataStoreManager.getSessionId()
+        if (sessionId != null) {
+            if (isAddedToWatchList) {
+                try {
+                    binding.addToWatchlistButton.setImageResource(R.drawable.save_add)
+                    val watchListResponse = AddToWatchListRequest(
+                        media_type = "movie",
+                        media_id = movieId,
+                        watchlist = false
+                    )
+                    val response = api.addToWatchList(
+                        accountId = 21858168,
+                        sessionId = sessionId,
+                        watchListRequest = watchListResponse
+                    )
+                    Log.d("FilmDetailsFragment", "addToWatchList top: $response")
+                    if (response.success) {
+                        Toast.makeText(requireContext(), "Added to watchlist", Toast.LENGTH_SHORT).show()
+                        viewModel.notifyFavoriteMoviesUpdated()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Failed to add to watchlist",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("FilmDetailsFragment", "Error adding to watchlist", e)
+                    Toast.makeText(
+                        requireContext(),
+                        "Error adding to watchlist",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } else {
+                try {
+                    binding.addToWatchlistButton.setImageResource(R.drawable.save_add_added)
+                    val warchListRequest = AddToWatchListRequest(
+                        media_type = "movie",
+                        media_id = movieId,
+                        watchlist = true
+                    )
+                    val response = api.addToWatchList(
+                        accountId = 21858168,
+                        sessionId = sessionId,
+                        watchListRequest = warchListRequest
+                    )
+                    Log.d("FilmDetailsFragment", "addToWatchList: $response")
+                    if (response.success) {
+                        Toast.makeText(requireContext(), "Added to watchlist", Toast.LENGTH_SHORT)
+                            .show()
+                        viewModel.notifyFavoriteMoviesUpdated()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Failed to add to watchlist",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("FilmDetailsFragment", "Error adding to watchlist", e)
+                    Toast.makeText(
+                        requireContext(),
+                        "Error adding to watchlist",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+        } else {
+            Toast.makeText(requireContext(), "Session ID not found", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     private suspend fun getMovieRecommendations(movieId: Int, api: API): List<Movie>? {
@@ -181,7 +395,6 @@ class FilmDetailsFragment : Fragment() {
             try {
                 api.getMovieReviews(movieId)
             } catch (e: Exception) {
-                Log.d("film_details_fragment", "its in here")
                 Log.e("film_details_fragment", "Error fetching movie reviews", e)
                 null
             }
@@ -212,12 +425,58 @@ class FilmDetailsFragment : Fragment() {
                 .apply(requestOptions)
                 .into(filmPoster)
             filmName.text = movieDetails.title
-            val mainDescription = ("${((movieDetails.vote_average * 10).roundToInt() / 10)} ${
-                movieDetails.vote_count
-            } \n ${movieDetails.release_date}, ${
-                movieDetails.genres[0].name
-            }, ${movieDetails.genres[1].name} \n ${movieDetails.adult}, ${movieDetails.production_countries[0].name}")
 
+            var rating = movieDetails.vote_average
+            rating = (rating * 10).roundToInt() / 10.0
+
+            binding.ratingOfFilm.text = rating.toString()
+            when (rating) {
+                in 0.0..3.0 -> binding.ratingOfFilm.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.rating_under_3_color
+                    )
+                )
+
+                in 3.1..5.0 -> binding.ratingOfFilm.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.rating_3_to_5_color
+                    )
+                )
+
+                in 5.1..7.0 -> binding.ratingOfFilm.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.rating_5_to_7_color
+                    )
+                )
+
+                in 7.1..10.0 -> binding.ratingOfFilm.setTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.rating_above_7
+                    )
+                )
+            }
+
+            val date = movieDetails.release_date.split("-")
+            val year = date[0]
+
+            val genres = movieDetails.genres
+            var genresString = ""
+            genres.forEachIndexed { index, genre ->
+                if (index <= 1) {
+                    genresString = genresString + genre.name + ", "
+                }
+            }
+
+
+            val mainDescription =
+                ("${year}, $genresString \n ${movieDetails.production_countries[0].name} ${movieDetails.runtime} min" +
+                        "${if (movieDetails.adult) "18+" else ""}")
+
+            binding.reviewsCounter.text = movieDetails.vote_count.toString()
             filmMainDetails.text = mainDescription
             description.text = movieDetails.overview
 
