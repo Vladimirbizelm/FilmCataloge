@@ -12,6 +12,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.filmcataloge.R
 import com.example.filmcataloge.databinding.MovieItemBinding
 import com.example.filmcataloge.netConfiguration.popularMovies.Movie
+import com.example.filmcataloge.utils.MovieUtils
 
 const val BASE_URL_FOR_IMAGES = "https://image.tmdb.org/t/p/original/"
 
@@ -35,7 +36,10 @@ class NestedRVAdapter() : ListAdapter<Movie, NestedRVAdapter.ViewHolder>(MovieDi
                 .into(cardOfFilm)
             ratingOfFilm.text = movie.vote_average.toString()
             titleOfFilm.text = movie.title
-
+            ratingOfFilm.setTextColor(MovieUtils.getRatingColor(
+                ratingOfFilm.context,
+                rating = movie.vote_average
+            ))
             itemView.setOnClickListener {
                 Log.d("NestedRVAdapter", "onItemClick: $movie")
                 listener?.onItemClick(adapterPosition, movie)

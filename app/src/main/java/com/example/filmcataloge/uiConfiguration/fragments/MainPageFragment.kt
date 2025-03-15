@@ -18,17 +18,17 @@ import com.example.filmcataloge.netConfiguration.popularMovies.Movie
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.MainRVAdapter
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.NestedRVAdapter
 import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
+import com.example.filmcataloge.utils.MovieUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
 
 
 class MainPageFragment : Fragment() {
 
-    private val categories: ArrayList<String> = arrayListOf("Popular", "Top Rated", "Upcoming")
+    private val categories: ArrayList<String> = arrayListOf("Popular", "Top Rated")
     private lateinit var binding: FragmentMainPageBinding
     private lateinit var viewModel: FilmDetailsViewModel
 
@@ -76,25 +76,23 @@ class MainPageFragment : Fragment() {
 
     private fun getMoviesForMainPage(api: API, adapter: MainRVAdapter) {
         CoroutineScope(Dispatchers.IO).launch {
-            val popularMoviesResponse = async { api.getPopularMovies(API_KEY) }
-            val topRatedMovieResponse = async { api.getTopRatedMovies(API_KEY) }
+            try {
+                val popularMoviesResponse = async { api.getPopularMovies(API_KEY) }
+                val topRatedMovieResponse = async { api.getTopRatedMovies(API_KEY) }
 
-            val popularMoviesDeferred = popularMoviesResponse.await()
-            val topRatedMoviesDeferred = topRatedMovieResponse.await()
+                val popularMoviesDeferred = popularMoviesResponse.await()
+                val topRatedMoviesDeferred = topRatedMovieResponse.await()
 
-            val listOfPopularMovies: ArrayList<Movie> = popularMoviesDeferred.results
-            val listOfTopRatedMovies: ArrayList<Movie> = topRatedMoviesDeferred.results
+                val listOfPopularMovies = MovieUtils.formatMoviesList(popularMoviesDeferred.results)
+                val listOfTopRatedMovies =
+                    MovieUtils.formatMoviesList(topRatedMoviesDeferred.results)
 
-            listOfPopularMovies.forEach {
-                it.vote_average = (it.vote_average * 10).roundToInt() / 10.0
-            }
-            listOfTopRatedMovies.forEach {
-                it.vote_average = (it.vote_average * 10).roundToInt() / 10.0
-            }
-
-            withContext(Dispatchers.Main) {
-                adapter.setMovies("Popular", listOfPopularMovies)
-                adapter.setMovies("Top Rated", listOfTopRatedMovies)
+                withContext(Dispatchers.Main) {
+                    adapter.setMovies("Popular", listOfPopularMovies)
+                    adapter.setMovies("Top Rated", listOfTopRatedMovies)
+                }
+            } catch (e: Exception) {
+                Log.e("MainPageFragment", "Error loading movies", e)
             }
 
         }

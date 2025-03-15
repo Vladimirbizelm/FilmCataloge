@@ -1,12 +1,12 @@
 package com.example.filmcataloge.uiConfiguration.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -14,13 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
-import com.example.filmcataloge.API_KEY
 import com.example.filmcataloge.MainActivity
 import com.example.filmcataloge.R
 import com.example.filmcataloge.databinding.FragmentFilmDetailsFragmentBinding
 import com.example.filmcataloge.netConfiguration.API
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToFavorite.AddToFavoriteRequest
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToWatchList.AddToWatchListRequest
 import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.dataStoreManager.DataStoreManager
 import com.example.filmcataloge.netConfiguration.movieDetais.MovieDetails
@@ -30,14 +27,14 @@ import com.example.filmcataloge.uiConfiguration.moviesAdapter.BASE_URL_FOR_IMAGE
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.NestedRVAdapter
 import com.example.filmcataloge.uiConfiguration.reviewsAdapter.ReviewsAdapter
 import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
+import com.example.filmcataloge.utils.CollectionsRepository
+import com.example.filmcataloge.utils.MovieUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
 
 // TODO: (set up RV), (adapter for reviews), actors, (recommended films )
 // TODO: add some images for films https://developer.themoviedb.org/reference/movie-images
-// TODO: fix updateUI fun
 
 class FilmDetailsFragment : Fragment() {
 
@@ -45,12 +42,15 @@ class FilmDetailsFragment : Fragment() {
     private var filmID: Int? = null
     private lateinit var viewModel: FilmDetailsViewModel
     private lateinit var dataStoreManager: DataStoreManager
+    private lateinit var collectionsRepository: CollectionsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         filmID = arguments?.getInt("filmID")
         viewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
         dataStoreManager = DataStoreManager(requireContext())
+        collectionsRepository =
+            CollectionsRepository(RetrofitClient.api, dataStoreManager, requireContext())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -61,61 +61,72 @@ class FilmDetailsFragment : Fragment() {
         }
 
         binding.addToFavoriteButton.setOnClickListener {
-            lifecycleScope.launch {
-                val favCollection = getFavoritePageMoviesCollections(
-                    RetrofitClient.api,
-                    dataStoreManager.getSessionId()
-                )
-                Log.d("FilmDetailsFragment", "onViewCreated: $favCollection")
-                if (dataStoreManager.getSessionId() != null && favCollection != null) {
-                    filmID?.let {
-                        addToFavorite(
-                            it,
-                            RetrofitClient.api,
-                            isAddedToTheCollection(favCollection)
-                        )
-                    }
-                } else {
-                    Toast.makeText(requireContext(), "Please authenticate", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
+            handleCollectionButton(CollectionsRepository.CollectionType.FAVORITE)
         }
 
         binding.addToWatchlistButton.setOnClickListener {
+            handleCollectionButton(CollectionsRepository.CollectionType.WATCHLIST)
+        }
 
-            lifecycleScope.launch {
-                val watchListCollection = getWatchListMoviesCollection(
-                    RetrofitClient.api,
-                    dataStoreManager.getSessionId()
-                )
-                Log.d("FilmDetailsFragment", "onViewCreated: $watchListCollection")
-                if (dataStoreManager.getSessionId() != null && watchListCollection != null) {
-                    filmID?.let {
-                        addToWatchList(
-                            it,
-                            RetrofitClient.api,
-                            isAddedToTheCollection(watchListCollection)
-                        )
-                    }
-                } else {
-                    Toast.makeText(requireContext(), "Please authenticate", Toast.LENGTH_SHORT)
-                        .show()
+        binding.shareButton.setOnClickListener {
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, "https://www.themoviedb.org/movie/$filmID")
+                type = "text/plain"
+            }
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            startActivity(shareIntent)
+        }
+
+    }
+
+    private fun handleCollectionButton(type: CollectionsRepository.CollectionType) {
+        lifecycleScope.launch {
+            try {
+                val collections = collectionsRepository.loadCollections()
+                val isInCollection = when (type) {
+                    CollectionsRepository.CollectionType.FAVORITE -> collectionsRepository.isMovieInCollection(
+                        collections.favorites, filmID ?: 0
+                    )
+
+                    CollectionsRepository.CollectionType.WATCHLIST -> collectionsRepository.isMovieInCollection(
+                        collections.watchlist, filmID ?: 0
+                    )
                 }
+
+                val success = when (type) {
+                    CollectionsRepository.CollectionType.FAVORITE -> collectionsRepository.toggleFavorite(
+                        filmID ?: 0,
+                        isInCollection
+                    )
+
+                    CollectionsRepository.CollectionType.WATCHLIST -> collectionsRepository.toggleWatchlist(
+                        filmID ?: 0,
+                        isInCollection
+                    )
+                }
+
+                if (success) {
+                    updateButtonUI(type, !isInCollection)
+                    when (type) {
+                        CollectionsRepository.CollectionType.FAVORITE -> viewModel.notifyFavoriteMoviesUpdated()
+
+                        CollectionsRepository.CollectionType.WATCHLIST -> viewModel.notifyWatchLaterMoviesUpdated()
+                    }
+                    val action = if (!isInCollection) "added to" else "removed from"
+                    val typeName =
+                        if (type == CollectionsRepository.CollectionType.FAVORITE) "favorite" else "watchlist"
+                    Toast.makeText(
+                        requireContext(), "Successfully $action $typeName", Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e("FilmDetailsFragment", "Error handling collection button", e)
+                Toast.makeText(requireContext(), "Error updating collection", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
-
     }
-
-    private fun isAddedToTheCollection(collection: ArrayList<Movie>): Boolean {
-        for (i in collection) {
-            if (i.id == filmID) {
-                return true
-            }
-        }
-        return false
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -127,9 +138,7 @@ class FilmDetailsFragment : Fragment() {
 
 
     private fun restoreOrCreateFragmentView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        api: API
+        inflater: LayoutInflater, container: ViewGroup?, api: API
     ) {
         binding = FragmentFilmDetailsFragmentBinding.inflate(inflater, container, false)
         val recommendedFilmsAdapter = NestedRVAdapter()
@@ -175,214 +184,44 @@ class FilmDetailsFragment : Fragment() {
 
     private fun updateCollectionsButtonsUI() {
         lifecycleScope.launch {
-            val favCollection = getFavoritePageMoviesCollections(
-                RetrofitClient.api,
-                dataStoreManager.getSessionId()
-            )
-            if (favCollection != null) {
+            try {
+                val collections = collectionsRepository.loadCollections()
+                val inFavorites =
+                    collectionsRepository.isMovieInCollection(collections.favorites, filmID ?: 0)
+                val inWatchList =
+                    collectionsRepository.isMovieInCollection(collections.watchlist, filmID ?: 0)
+
+                updateButtonUI(CollectionsRepository.CollectionType.FAVORITE, inFavorites)
+                updateButtonUI(CollectionsRepository.CollectionType.WATCHLIST, inWatchList)
+            } catch (e: Exception) {
+                Log.e("FilmDetailsFragment", "Error updating collection buttons", e)
+            }
+        }
+    }
+
+    private fun updateButtonUI(
+        type: CollectionsRepository.CollectionType, isInCollection: Boolean
+    ) {
+        when (type) {
+            CollectionsRepository.CollectionType.FAVORITE -> {
                 binding.addToFavoriteButton.setImageResource(
-                    if (isAddedToTheCollection(favCollection)) R.drawable.added_to_fav else R.drawable.favorite
+                    if (isInCollection) R.drawable.added_to_fav else R.drawable.favorite
                 )
             }
 
-            val watchListCollection = getWatchListMoviesCollection(
-                RetrofitClient.api,
-                dataStoreManager.getSessionId()
-            )
-            if (watchListCollection != null) {
+            CollectionsRepository.CollectionType.WATCHLIST -> {
                 binding.addToWatchlistButton.setImageResource(
-                    if (isAddedToTheCollection(watchListCollection)) R.drawable.save_add_added else R.drawable.save_add
+                    if (isInCollection) R.drawable.save_add_added else R.drawable.save_add
                 )
             }
         }
-    }
-
-    private suspend fun getFavoritePageMoviesCollections(
-        api: API,
-        sessionId: String?
-    ): ArrayList<Movie>? {
-        return withContext(Dispatchers.IO) {
-            try {
-                api.getFavoriteMovies(21858168, API_KEY, sessionId ?: "").results
-            } catch (e: Exception) {
-                Log.e("FavoritesFragment", "Error fetching movies", e)
-                null
-            }
-        }
-    }
-
-    private suspend fun getWatchListMoviesCollection(
-        api: API,
-        sessionId: String?
-    ): ArrayList<Movie>? {
-        return withContext(Dispatchers.IO) {
-            try {
-                api.getWatchList(21858168, API_KEY, sessionId ?: "").results
-            } catch (e: Exception) {
-                Log.e("FavoritesFragment", "Error fetching movies", e)
-                null
-            }
-        }
-    }
-
-    private suspend fun addToFavorite(movieId: Int, api: API, isAddedToFavorite: Boolean) {
-        val sessionId = dataStoreManager.getSessionId()
-        if (sessionId != null) {
-            if (isAddedToFavorite) {
-                try {
-                    binding.addToFavoriteButton.setImageResource(R.drawable.favorite)
-                    val favoriteRequest = AddToFavoriteRequest(
-                        media_type = "movie",
-                        media_id = movieId,
-                        favorite = false
-                    )
-                    val response = api.addToFavorite(
-                        accountId = 21858168,
-                        sessionId = sessionId,
-                        favoriteRequest = favoriteRequest
-                    )
-                    if (response.success) {
-                        Toast.makeText(requireContext(), "Added to favorites", Toast.LENGTH_SHORT)
-                            .show()
-                        viewModel.notifyFavoriteMoviesUpdated()
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            "Failed to add to favorites",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } catch (e: Exception) {
-                    Log.e("FilmDetailsFragment", "Error adding to favorites", e)
-                    Toast.makeText(
-                        requireContext(),
-                        "Error adding to favorites",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } else {
-                try {
-                    binding.addToFavoriteButton.setImageResource(R.drawable.added_to_fav)
-                    val favoriteRequest = AddToFavoriteRequest(
-                        media_type = "movie",
-                        media_id = movieId,
-                        favorite = true
-                    )
-                    val response = api.addToFavorite(
-                        accountId = 21858168,
-                        sessionId = sessionId,
-                        favoriteRequest = favoriteRequest
-                    )
-                    if (response.success) {
-                        Toast.makeText(requireContext(), "Added to favorites", Toast.LENGTH_SHORT)
-                            .show()
-                        viewModel.notifyFavoriteMoviesUpdated()
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            "Failed to add to favorites",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } catch (e: Exception) {
-                    Log.e("FilmDetailsFragment", "Error adding to favorites", e)
-                    Toast.makeText(
-                        requireContext(),
-                        "Error adding to favorites",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-
-        } else {
-            Toast.makeText(requireContext(), "Session ID not found", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private suspend fun addToWatchList(movieId: Int, api: API, isAddedToWatchList: Boolean) {
-        val sessionId = dataStoreManager.getSessionId()
-        if (sessionId != null) {
-            if (isAddedToWatchList) {
-                try {
-                    binding.addToWatchlistButton.setImageResource(R.drawable.save_add)
-                    val watchListResponse = AddToWatchListRequest(
-                        media_type = "movie",
-                        media_id = movieId,
-                        watchlist = false
-                    )
-                    val response = api.addToWatchList(
-                        accountId = 21858168,
-                        sessionId = sessionId,
-                        watchListRequest = watchListResponse
-                    )
-                    Log.d("FilmDetailsFragment", "addToWatchList top: $response")
-                    if (response.success) {
-                        Toast.makeText(requireContext(), "Added to watchlist", Toast.LENGTH_SHORT).show()
-                        viewModel.notifyFavoriteMoviesUpdated()
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            "Failed to add to watchlist",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } catch (e: Exception) {
-                    Log.e("FilmDetailsFragment", "Error adding to watchlist", e)
-                    Toast.makeText(
-                        requireContext(),
-                        "Error adding to watchlist",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } else {
-                try {
-                    binding.addToWatchlistButton.setImageResource(R.drawable.save_add_added)
-                    val warchListRequest = AddToWatchListRequest(
-                        media_type = "movie",
-                        media_id = movieId,
-                        watchlist = true
-                    )
-                    val response = api.addToWatchList(
-                        accountId = 21858168,
-                        sessionId = sessionId,
-                        watchListRequest = warchListRequest
-                    )
-                    Log.d("FilmDetailsFragment", "addToWatchList: $response")
-                    if (response.success) {
-                        Toast.makeText(requireContext(), "Added to watchlist", Toast.LENGTH_SHORT)
-                            .show()
-                        viewModel.notifyFavoriteMoviesUpdated()
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            "Failed to add to watchlist",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                } catch (e: Exception) {
-                    Log.e("FilmDetailsFragment", "Error adding to watchlist", e)
-                    Toast.makeText(
-                        requireContext(),
-                        "Error adding to watchlist",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-
-        } else {
-            Toast.makeText(requireContext(), "Session ID not found", Toast.LENGTH_SHORT).show()
-        }
-
     }
 
     private suspend fun getMovieRecommendations(movieId: Int, api: API): List<Movie>? {
         return withContext(Dispatchers.IO) {
             try {
                 val recommendedFilms = api.getRecommendedMoviesForThisMovieByID(movieId).results
-                recommendedFilms.forEach {
-                    it.vote_average = (it.vote_average * 10).roundToInt() / 10.0
-                }
-                recommendedFilms
+                MovieUtils.formatMoviesList(recommendedFilms)
             } catch (e: Exception) {
                 Log.e("film_details_fragment", "Error fetching movie recommendations", e)
                 null
@@ -414,67 +253,28 @@ class FilmDetailsFragment : Fragment() {
 
     private fun updateUI(movieDetails: MovieDetails) {
         binding.apply {
-            val requestOptions = RequestOptions()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .override(300, 450)
-                .placeholder(R.drawable.loading)
-                .error(R.drawable.loading)
+            val requestOptions =
+                RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL).override(300, 450)
+                    .placeholder(R.drawable.loading).error(R.drawable.loading)
             Glide.with(this@FilmDetailsFragment)
-                .load(BASE_URL_FOR_IMAGES + movieDetails.poster_path)
-                .apply(requestOptions)
-                .apply(requestOptions)
-                .into(filmPoster)
+                .load(BASE_URL_FOR_IMAGES + movieDetails.poster_path).apply(requestOptions)
+                .apply(requestOptions).into(filmPoster)
             filmName.text = movieDetails.title
 
-            var rating = movieDetails.vote_average
-            rating = (rating * 10).roundToInt() / 10.0
+            val rating = MovieUtils.formatRating(movieDetails.vote_average)
 
-            binding.ratingOfFilm.text = rating.toString()
-            when (rating) {
-                in 0.0..3.0 -> binding.ratingOfFilm.setTextColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.rating_under_3_color
-                    )
-                )
-
-                in 3.1..5.0 -> binding.ratingOfFilm.setTextColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.rating_3_to_5_color
-                    )
-                )
-
-                in 5.1..7.0 -> binding.ratingOfFilm.setTextColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.rating_5_to_7_color
-                    )
-                )
-
-                in 7.1..10.0 -> binding.ratingOfFilm.setTextColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.rating_above_7
-                    )
-                )
-            }
+            ratingOfFilm.text = rating.toString()
+            ratingOfFilm.setTextColor(MovieUtils.getRatingColor(requireContext(), rating))
 
             val date = movieDetails.release_date.split("-")
             val year = date[0]
 
-            val genres = movieDetails.genres
-            var genresString = ""
-            genres.forEachIndexed { index, genre ->
-                if (index <= 1) {
-                    genresString = genresString + genre.name + ", "
-                }
-            }
+            val genres = MovieUtils.formatGenres(movieDetails.genres)
 
+            val duration = MovieUtils.formatDuration(movieDetails.runtime)
 
             val mainDescription =
-                ("${year}, $genresString \n ${movieDetails.production_countries[0].name} ${movieDetails.runtime} min" +
-                        "${if (movieDetails.adult) "18+" else ""}")
+                ("${year}, $genres \n ${movieDetails.production_countries[0].name} ${duration} min" + "${if (movieDetails.adult) "18+" else ""}")
 
             binding.reviewsCounter.text = movieDetails.vote_count.toString()
             filmMainDetails.text = mainDescription

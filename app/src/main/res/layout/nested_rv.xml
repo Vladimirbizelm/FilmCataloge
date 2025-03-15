@@ -9,7 +9,6 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:text="@string/test_film_category"
         android:textSize="22sp"
         android:layout_margin="10dp"/>
     <androidx.recyclerview.widget.RecyclerView

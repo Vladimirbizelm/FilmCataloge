@@ -33,28 +33,29 @@ const val API_KEY = "9d84a8a1e699e305c54c15e454163cda"
 // TODO: (search panel)
 // TODO: https://developer.themoviedb.org/reference/movie-now-playing-list
 // TODO: (НАСТРОИТЬ МАСШТАБИРУЕМОСТЬ -> remake all layouts use nested rv)
+// TODO: (optimize date time in filmDetailsFragment and reviewsAdapter)
+// TODO: (add for fav layout that shows u need to log in)
+// TODO: (bug open film detail from favorites adn back)
+// TODO: (make undo for fav button)
+// TODO: (import btns icons for detail frag and make logic to change it if it was pressed )
 
 // TODO: fill profile page with some activity
 // TODO: add lists for films and accessibility to add it from movieDetails fragment
 // TODO: add more content to the main page
-// TODO: optimize date time in filmDetailsFragment and reviewsAdapter
-// TODO: check all of the possible exceptions(highly necessary)
 // TODO: add avatar to userAcc layout
 // TODO: refactor shitty strings file...
 // TODO: try to add customView for circle diagram xd
-// TODO: option buttons in fragment film details - add logic 
-// TODO: add for fav layout that shows u need to log in
-// TODO: bug open film detail from favorites adn back
-// TODO: make undo for fav button
+// TODO: option buttons in fragment film details - add logic
 // TODO: add fragment for more options button in movie detail fragment
 
-// TODO: import btns icons for detail frag and make logic to change it if it was pressed 
-// TODO: add splash screen 
+// TODO: add splash screen - fix it
+
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
+
     private lateinit var activeFragment: Fragment
     private lateinit var homeFragment: MainPageFragment
     private lateinit var profileFragment: ProfileFragment

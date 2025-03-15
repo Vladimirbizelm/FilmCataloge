@@ -50,12 +50,14 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
-    //proto (like shared preferences) to store auth token
+    //datastore (like shared preferences) to store auth token
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
 
     
     annotationProcessor ("androidx.room:room-compiler:2.5.2")
     implementation("androidx.room:room-runtime:2.6.1")
+
+    implementation ("androidx.core:core-splashscreen:1.0.0")
 
     implementation(libs.glide)
     annotationProcessor(libs.compiler)

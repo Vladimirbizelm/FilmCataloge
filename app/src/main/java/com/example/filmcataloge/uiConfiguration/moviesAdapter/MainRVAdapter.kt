@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.filmcataloge.R
 import com.example.filmcataloge.databinding.NestedRvBinding
 import com.example.filmcataloge.netConfiguration.popularMovies.Movie
+import com.example.filmcataloge.utils.MovieUtils
 
 class MainRVAdapter(private val categories: List<String>) :
     RecyclerView.Adapter<MainRVAdapter.MainViewHolder>() {
@@ -51,7 +52,8 @@ class MainRVAdapter(private val categories: List<String>) :
     }
 
     fun setMovies(category: String, movies: List<Movie>) {
-        moviesMap[category] = movies
+        val changed = MovieUtils.formatMoviesList(movies)
+        moviesMap[category] = changed
         notifyItemRangeChanged(0, movies.size)
     }
 

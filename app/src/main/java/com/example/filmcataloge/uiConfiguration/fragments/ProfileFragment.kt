@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.filmcataloge.databinding.FragmentProfileBinding
@@ -17,16 +18,19 @@ import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.createSession.LoginRequest
 import com.example.filmcataloge.netConfiguration.createSession.SessionRequest
 import com.example.filmcataloge.netConfiguration.dataStoreManager.DataStoreManager
+import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
 import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
     private lateinit var dataStoreManager: DataStoreManager
     private lateinit var binding: FragmentProfileBinding
+    private lateinit var viewModel: FilmDetailsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dataStoreManager = DataStoreManager(requireContext())
+        viewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
         lifecycleScope.launch {
             val sessionId = dataStoreManager.getSessionId()
             if (sessionId != null) {
@@ -114,6 +118,7 @@ class ProfileFragment : Fragment() {
             if (sessionResponse.success) {
                 Log.d("ProfileFragment", "Saving session id")
                 dataStoreManager.saveSessionId(sessionResponse.session_id)
+                viewModel.notifySessionIdUpdated()
                 return sessionResponse.session_id
             }
         } catch (e: Exception) {

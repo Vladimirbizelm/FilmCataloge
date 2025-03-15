@@ -2,5 +2,5 @@ package com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToWatch
 
 data class AddToWatchListResponse(
     val success: Boolean,
-    val sessionId: String
+    val session_id: String
 )
