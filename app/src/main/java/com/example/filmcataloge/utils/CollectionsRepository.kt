@@ -5,8 +5,10 @@ import android.util.Log
 import android.widget.Toast
 import com.example.filmcataloge.API_KEY
 import com.example.filmcataloge.netConfiguration.API
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToFavorite.AddToFavoriteRequest
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToWatchList.AddToWatchListRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToFavorite.AddToFavoriteRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToWatchList.AddToWatchListRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.createCustomList.CreateCustomListRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.getListOfCustomLists.ListObject
 import com.example.filmcataloge.netConfiguration.dataStoreManager.DataStoreManager
 import com.example.filmcataloge.netConfiguration.popularMovies.Movie
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +39,97 @@ class CollectionsRepository(
         }
     }
 
+    suspend fun getCustomLists(): List<ListObject> {
+        return handleApiCall("getCustomLists") {
+            val sessionId = dataStoreManager.getSessionId() ?: return@handleApiCall emptyList()
+
+            val response = api.getCustomLists(
+                accountId = accountId,
+                page = 1,
+                api_key = API_KEY,
+                sessionId = sessionId
+            )
+            Log.d("CollectionsRepository", "getCustomLists response: $response")
+            response.results
+        } ?: emptyList()
+    }
+
+    suspend fun createCustomList(name: String, description: String): Boolean {
+        return handleApiCall("createCustomList") {
+            val sessionId = dataStoreManager.getSessionId() ?: return@handleApiCall false
+
+            val response = api.createCustomList(
+                api_key = API_KEY,
+                sessionId = sessionId,
+                createListRequest = CreateCustomListRequest(
+                    name = name,
+                    description = description,
+                    language = "en-US"
+                )
+            )
+            Log.d("CollectionsRepository", "List created: ${response.success}")
+            response.success
+        } ?: false
+    }
+    suspend fun addMovieToCustomList(listId: Int, movieId: Int): Boolean {
+        return handleApiCall("addMovieToCustomList") {
+            val sessionId = dataStoreManager.getSessionId() ?: return@handleApiCall false
+
+            val response = api.addMovieToList(
+                listId = listId,
+                api_key = API_KEY,
+                sessionId = sessionId,
+                mediaId = movieId
+            )
+            Log.d("CollectionsRepository", "Movie added to list: ${response.status_code}")
+            true
+        } ?: false
+    }
+
+    suspend fun removeMovieFromCustomList(listId: Int, movieId: Int): Boolean{
+        return handleApiCall("removeMovieFromCustomList") {
+            val sessionId = dataStoreManager.getSessionId() ?: return@handleApiCall false
+
+            val response = api.removeMovieFromList(
+                listId = listId,
+                api_key = API_KEY,
+                sessionId = sessionId,
+                mediaId = movieId
+            )
+            Log.d("CollectionsRepository", "Movie removed from list: ${response.status_code}")
+            true
+        } ?: false
+    }
+
+    suspend fun findCustomListByName(name: String): ListObject? {
+        val lists = getCustomLists()
+        return lists.find { it.name == name }
+    }
+
+    suspend fun createListIfNotExists(name: String, description: String): Boolean {
+        val existingList = findCustomListByName(name)
+        if (existingList == null) {
+            return createCustomList(name, description)
+        }
+        return true
+    }
+
+    suspend fun isMovieInCustomList(listId: Int, movieId: Int): Boolean {
+        return handleApiCall("isMovieInCustomList") {
+            val sessionId = dataStoreManager.getSessionId() ?: return@handleApiCall false
+
+            val response = api.checkMovieInList(
+                listId = listId,
+                api_key = API_KEY,
+                movieId = movieId,
+                sessionId = sessionId
+            )
+            Log.d("CollectionsRepository", "Movie in list: ${response.item_present}")
+            response.item_present
+        } ?: false
+    }
+
+
     fun isMovieInCollection(collection: List<Movie>?, movieId: Int): Boolean {
         return collection?.any { it.id == movieId } ?: false
     }
@@ -52,7 +145,6 @@ class CollectionsRepository(
     suspend fun loadCollections(): CollectionsData = coroutineScope {
         val favoriteDeferred = async { getFavoriteMovies() }
         val watchlistDeferred = async { getWatchlistMovies() }
-
         CollectionsData(
             favorites = favoriteDeferred.await(),
             watchlist = watchlistDeferred.await()
@@ -79,6 +171,7 @@ class CollectionsRepository(
                     )
                     api.addToFavorite(accountId, API_KEY, sessionId, request).success
                 }
+
                 CollectionType.WATCHLIST -> {
                     val request = AddToWatchListRequest(
                         media_type = "movie",

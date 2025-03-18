@@ -40,6 +40,10 @@ class NestedRVAdapter() : ListAdapter<Movie, NestedRVAdapter.ViewHolder>(MovieDi
                 ratingOfFilm.context,
                 rating = movie.vote_average
             ))
+            ratingOfFilm.setBackgroundColor(MovieUtils.getRatingBackgroundColor(
+                ratingOfFilm.context,
+                rating = movie.vote_average
+            ))
             itemView.setOnClickListener {
                 Log.d("NestedRVAdapter", "onItemClick: $movie")
                 listener?.onItemClick(adapterPosition, movie)

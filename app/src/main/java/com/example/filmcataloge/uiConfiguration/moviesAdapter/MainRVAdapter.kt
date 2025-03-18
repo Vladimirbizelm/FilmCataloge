@@ -21,7 +21,11 @@ class MainRVAdapter(private val categories: List<String>) :
         private val binding: NestedRvBinding = NestedRvBinding.bind(view)
 
         fun bind(category: String, movies: List<Movie>, listener: OnItemClickListener?, nestedItemClickListener: NestedRVAdapter.OnItemClickListener?) = with(binding) {
-            categoryName.text = category
+
+            if (movies.isEmpty().not()){
+                categoryName.text = category
+            }
+
             nestedRv.layoutManager = LinearLayoutManager(nestedRv.context, LinearLayoutManager.HORIZONTAL, false)
             val nestedRVAdapter = NestedRVAdapter()
             nestedRv.adapter = nestedRVAdapter

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/MAIN"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -14,7 +15,6 @@
             android:id="@+id/mainFilmDetailsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
             android:orientation="vertical">
 
             <ImageView
@@ -45,34 +45,36 @@
 
                 <LinearLayout
                     android:id="@+id/hui"
-                    app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    app:layout_constraintStart_toStartOf="@id/filmDescriptionLayout"
                     app:layout_constraintEnd_toEndOf="@id/filmDescriptionLayout"
-                    android:layout_height="wrap_content">
+                    app:layout_constraintStart_toStartOf="@id/filmDescriptionLayout"
+                    app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout">
+
                     <TextView
                         android:id="@+id/ratingOfFilm"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="14sp"
                         android:gravity="center"
+                        android:textSize="14sp"
+                        app:layout_constraintEnd_toEndOf="@id/filmDescriptionLayout"
                         app:layout_constraintStart_toStartOf="@id/filmDescriptionLayout"
                         app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout"
-                        app:layout_constraintEnd_toEndOf="@id/filmDescriptionLayout"
                         tools:text="9.1" />
+
                     <TextView
                         android:id="@+id/reviewsCounter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout"
                         app:layout_constraintStart_toEndOf="@id/ratingOfFilm"
-                        tools:text="1899"/>
+                        app:layout_constraintTop_toTopOf="@id/filmDescriptionLayout"
+                        tools:text="1899" />
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="wrap_content"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
                         android:scaleType="centerCrop"
                         android:src="@drawable/review_icon"
                         app:layout_constraintBottom_toBottomOf="@id/reviewsCounter"
@@ -84,12 +86,12 @@
                     android:id="@+id/filmMainDetails"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
                     android:gravity="center"
-                    app:layout_constraintTop_toBottomOf="@id/hui"
-                    app:layout_constraintStart_toStartOf="@id/filmDescriptionLayout"
                     app:layout_constraintEnd_toEndOf="@id/filmDescriptionLayout"
-                    tools:text="test"
-                    android:layout_marginStart="5dp"/>
+                    app:layout_constraintStart_toStartOf="@id/filmDescriptionLayout"
+                    app:layout_constraintTop_toBottomOf="@id/hui"
+                    tools:text="test" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <Button
@@ -282,13 +284,29 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
-    <FrameLayout
-        android:id="@+id/ratingFragmentHolder"
+    <View
+        android:id="@+id/touchBlockerOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:background="#40000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintTop_toTopOf="parent"
-        android:visibility="gone"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <FrameLayout
+        android:id="@+id/moreOptionsFragmentHolder"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:backgroundTint="@color/white"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <ImageButton
         android:id="@+id/backFromFilmDetails"
         style="@style/IconButtonStyle"

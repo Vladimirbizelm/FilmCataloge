@@ -1,9 +1,14 @@
 package com.example.filmcataloge.netConfiguration
 
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToFavorite.AddToFavoriteRequest
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToFavorite.AddToFavoriteResponse
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToWatchList.AddToWatchListRequest
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.addToWatchList.AddToWatchListResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToFavorite.AddToFavoriteRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToFavorite.AddToFavoriteResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToWatchList.AddToWatchListRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToWatchList.AddToWatchListResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.AddRemoveMovieToListResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.CheckMovieInCustomListResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.createCustomList.CreateCustomListRequest
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.createCustomList.CreateCustomListResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.getListOfCustomLists.GetListOfCustomListsResponse
 import com.example.filmcataloge.netConfiguration.createSession.LoginRequest
 import com.example.filmcataloge.netConfiguration.createSession.RequestTokenResponse
 import com.example.filmcataloge.netConfiguration.createSession.SessionRequest
@@ -104,5 +109,53 @@ interface API {
         @Query("api_key") api_key: String = API_KEY,
         @Query("session_id") sessionId: String
     ): MoviesResponse
+
+
+
+    //watched list
+    @POST("list")
+    suspend fun createCustomList(
+        @Query("api_key") api_key: String = API_KEY,
+        @Query("session_id") sessionId: String,
+        @Body createListRequest: CreateCustomListRequest
+    ): CreateCustomListResponse
+
+    //get custom lists
+    @GET("account/{account_id}/lists")
+    suspend fun getCustomLists(
+        @Path("account_id") accountId: Int,
+        @Query("page") page: Int,
+        @Query("api_key") api_key: String = API_KEY,
+        @Query("session_id") sessionId: String
+    ): GetListOfCustomListsResponse
+
+    //add movie to custom list
+    @POST("list/{list_id}/add_item")
+    suspend fun addMovieToList(
+        @Path("list_id") listId: Int,
+        @Query("api_key") api_key: String,
+        @Query("session_id") sessionId: String,
+        @Query("media_id") mediaId: Int
+    ): AddRemoveMovieToListResponse
+
+    //remove movie from custom list
+    @POST("list/{list_id}/remove_item")
+    suspend fun removeMovieFromList(
+        @Path("list_id") listId: Int,
+        @Query("api_key") api_key: String,
+        @Query("session_id") sessionId: String,
+        @Query("media_id") mediaId: Int
+    ): AddRemoveMovieToListResponse
+
+    //check movie in custom List
+    @GET("list/{list_id}/item_status")
+    suspend fun checkMovieInList(
+        @Path("list_id") listId: Int,
+        @Query("api_key") api_key: String,
+        @Query("movie_id") movieId: Int,
+        @Query("session_id") sessionId: String
+    ): CheckMovieInCustomListResponse
+
+
 }
 

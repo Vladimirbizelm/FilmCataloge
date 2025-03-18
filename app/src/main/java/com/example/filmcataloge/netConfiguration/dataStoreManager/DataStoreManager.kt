@@ -3,7 +3,9 @@ package com.example.filmcataloge.netConfiguration.dataStoreManager
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.example.filmcataloge.MainActivity
 import com.example.filmcataloge.dataStore
+import com.example.filmcataloge.uiConfiguration.fragments.FavoritesFragment
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 

@@ -18,9 +18,9 @@
             android:layout_height="wrap_content"
             android:text="@string/loginLayoutDescribesToLoginTMDB"
             app:layout_constraintBottom_toTopOf="@id/loginInTMDB"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="@id/login_layout"
+            app:layout_constraintStart_toStartOf="@id/login_layout"
+            app:layout_constraintTop_toTopOf="@id/login_layout" />
 
         <Button
             android:id="@+id/loginInTMDB"

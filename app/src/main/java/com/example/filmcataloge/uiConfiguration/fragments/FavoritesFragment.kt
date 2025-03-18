@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.filmcataloge.MainActivity
+import com.example.filmcataloge.R
 import com.example.filmcataloge.databinding.FragmentFavoritesBinding
 import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.dataStoreManager.DataStoreManager
@@ -43,11 +44,13 @@ class FavoritesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = setUpAdapter()
+
+        binding.mainRV.visibility = View.GONE
+        binding.emptyStateView.visibility = View.GONE
+
         loadCollections(adapter)
         observeCollectionUpdates(adapter)
-
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -63,15 +66,40 @@ class FavoritesFragment : Fragment() {
     private fun loadCollections(adapter: MainRVAdapter) {
         lifecycleScope.launch {
             try {
-                val collectionsData = collectionsRepository.loadCollections()
-                if (collectionsData.favorites != null && collectionsData.watchlist != null) {
-                    adapter.setMovies("Favorite", collectionsData.favorites)
-                    adapter.setMovies("Watch later", collectionsData.watchlist)
+                binding.mainRV.visibility = View.GONE
+                binding.emptyStateView.visibility = View.GONE
+
+                val sessionId = dataStoreManager.getSessionId()
+                if (sessionId == null) {
+                    showEmptyState(getString(R.string.favorite_fragment_register_to_get_access))
+                    return@launch
                 }
+
+                val collectionsData = collectionsRepository.loadCollections()
+                val hasFavorites = !collectionsData.favorites.isNullOrEmpty()
+                val hasWatchlist = !collectionsData.watchlist.isNullOrEmpty()
+
+                if (!hasFavorites && !hasWatchlist) {
+                    showEmptyState(getString(R.string.collections_are_empty))
+                    return@launch
+                }
+
+                collectionsData.favorites?.let { adapter.setMovies("Favorite", it) }
+                collectionsData.watchlist?.let { adapter.setMovies("Watch later", it) }
+
+                binding.emptyStateView.visibility = View.GONE
+                binding.mainRV.visibility = View.VISIBLE
             } catch (e: Exception) {
                 Log.e("FavoritesFragment", "Error loading collections", e)
+                showEmptyState(getString(R.string.error_in_loading_collections))
             }
         }
+    }
+
+    private fun showEmptyState(message: String) {
+        binding.mainRV.visibility = View.GONE
+        binding.emptyStateView.visibility = View.VISIBLE
+        binding.emptyStateMessage.text = message
     }
 
     private fun observeCollectionUpdates(adapter: MainRVAdapter) {
@@ -94,10 +122,14 @@ class FavoritesFragment : Fragment() {
         filmDetailsViewModel.sessionIdUpdated.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { updated ->
                 if (updated) {
-                    binding.messageToUserToGetAuthorised.visibility = View.GONE
-                    binding.mainRV.visibility = View.VISIBLE
                     loadCollections(adapter)
                 }
+            }
+        }
+
+        lifecycleScope.launch {
+            if (dataStoreManager.getSessionId() != null){
+                loadCollections(adapter)
             }
         }
     }

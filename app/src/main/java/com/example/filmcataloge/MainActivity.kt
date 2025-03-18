@@ -38,18 +38,20 @@ const val API_KEY = "9d84a8a1e699e305c54c15e454163cda"
 // TODO: (bug open film detail from favorites adn back)
 // TODO: (make undo for fav button)
 // TODO: (import btns icons for detail frag and make logic to change it if it was pressed )
+// TODO: (refactor shitty strings file...)
 
 // TODO: fill profile page with some activity
 // TODO: add lists for films and accessibility to add it from movieDetails fragment
 // TODO: add more content to the main page
 // TODO: add avatar to userAcc layout
-// TODO: refactor shitty strings file...
 // TODO: try to add customView for circle diagram xd
 // TODO: option buttons in fragment film details - add logic
 // TODO: add fragment for more options button in movie detail fragment
 
 // TODO: add splash screen - fix it
 
+
+// TODO: profile fragment change login password from tests 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
 
 class MainActivity : AppCompatActivity() {
@@ -67,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityMainBinding.inflate(layoutInflater)
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        //enableEdgeToEdge()
         setContentView(binding.root)
 
         filmDetailsViewModel = ViewModelProvider(this)[FilmDetailsViewModel::class.java]
@@ -226,7 +228,6 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.nav_favorites -> {
                     switchToFragment(favoritesFragment)
-                    filmDetailsViewModel.notifyFavoriteMoviesUpdated()
                     true
                 }
 

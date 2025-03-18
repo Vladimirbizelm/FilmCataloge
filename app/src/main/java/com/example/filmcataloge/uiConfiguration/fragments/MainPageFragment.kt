@@ -14,10 +14,12 @@ import com.example.filmcataloge.MainActivity
 import com.example.filmcataloge.databinding.FragmentMainPageBinding
 import com.example.filmcataloge.netConfiguration.API
 import com.example.filmcataloge.netConfiguration.RetrofitClient
+import com.example.filmcataloge.netConfiguration.dataStoreManager.DataStoreManager
 import com.example.filmcataloge.netConfiguration.popularMovies.Movie
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.MainRVAdapter
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.NestedRVAdapter
 import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
+import com.example.filmcataloge.utils.CollectionsRepository
 import com.example.filmcataloge.utils.MovieUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,17 +30,22 @@ import kotlinx.coroutines.withContext
 
 class MainPageFragment : Fragment() {
 
-    private val categories: ArrayList<String> = arrayListOf("Popular", "Top Rated")
+    private val categories: ArrayList<String> =
+        arrayListOf("Popular", "Top Rated", "You wanted to watch")
     private lateinit var binding: FragmentMainPageBinding
     private lateinit var viewModel: FilmDetailsViewModel
+    private lateinit var dataStoreManager: DataStoreManager
+    private lateinit var collectionsRepository: CollectionsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        dataStoreManager = DataStoreManager(requireContext())
+        collectionsRepository =
+            CollectionsRepository(RetrofitClient.api, dataStoreManager, requireContext())
         super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         viewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
         binding = FragmentMainPageBinding.inflate(inflater, container, false)
@@ -84,9 +91,11 @@ class MainPageFragment : Fragment() {
                 val topRatedMoviesDeferred = topRatedMovieResponse.await()
 
                 val listOfPopularMovies = MovieUtils.formatMoviesList(popularMoviesDeferred.results)
-                val listOfTopRatedMovies =
-                    MovieUtils.formatMoviesList(topRatedMoviesDeferred.results)
+                val listOfTopRatedMovies = MovieUtils.formatMoviesList(topRatedMoviesDeferred.results)
 
+                listOfPopularMovies.forEach {
+                    Log.d("MainPageFragment", "Popular movie: ${it.title}")
+                }
                 withContext(Dispatchers.Main) {
                     adapter.setMovies("Popular", listOfPopularMovies)
                     adapter.setMovies("Top Rated", listOfTopRatedMovies)

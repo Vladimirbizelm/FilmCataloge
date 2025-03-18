@@ -10,15 +10,12 @@ class FilmDetailsViewModel : ViewModel() {
 
     private val _sessionId = MutableLiveData<Event<Boolean>>()
     val sessionIdUpdated: LiveData<Event<Boolean>> = _sessionId
-
     fun notifySessionIdUpdated() {
         _sessionId.value = Event(true)
     }
 
-
     private val _favoriteMoviesUpdated = MutableLiveData<Event<Boolean>>()
     val favoriteMoviesUpdated: LiveData<Event<Boolean>> = _favoriteMoviesUpdated
-
     fun notifyFavoriteMoviesUpdated() {
         _favoriteMoviesUpdated.value = Event(true)
     }
@@ -26,10 +23,14 @@ class FilmDetailsViewModel : ViewModel() {
 
     private val _watchLaterMoviesUpdated = MutableLiveData<Event<Boolean>>()
     val watchLaterMoviesUpdated: LiveData<Event<Boolean>> = _watchLaterMoviesUpdated
-
-
     fun notifyWatchLaterMoviesUpdated() {
         _watchLaterMoviesUpdated.value = Event(true)
+    }
+
+    private val _moreOptionsFragmentClosed = MutableLiveData<Event<Boolean>>()
+    val moreOptionsFragmentClosed: LiveData<Event<Boolean>> = _moreOptionsFragmentClosed
+    fun notifyMoreOptionsFragmentClosed() {
+        _moreOptionsFragmentClosed.value = Event(true)
     }
 
 }

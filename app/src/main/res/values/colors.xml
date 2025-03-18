@@ -2,12 +2,17 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="nav_background">#121212</color>  <!-- Тёмный фон -->
-    <color name="bottom_nav_icon">#FFFFFF</color>  <!-- Белые иконки -->
-    <color name="bottom_nav_text">#B3B3B3</color>  <!-- Серый текст -->
+    <color name="nav_background">#121212</color>
+    <color name="bottom_nav_icon">#FFFFFF</color>
+    <color name="bottom_nav_text">#B3B3B3</color>
 
-    <color name="rating_under_3_color">#f70202</color>
-    <color name="rating_3_to_5_color">#f78d02</color>
-    <color name="rating_5_to_7_color">#b3a89a</color>
-    <color name="rating_above_7">#28a82d</color>
+    <color name="rating_background_under_3_color">#f70202</color>
+    <color name="rating_background_3_to_5_color">#f78d02</color>
+    <color name="rating_background_5_to_7_color">#b3a89a</color>
+    <color name="rating_background_above_7">#28a82d</color>
+
+    <color name="rating_under_3_color">#FF000000</color>
+    <color name="rating_3_to_5_color">#FF000000</color>
+    <color name="rating_5_to_7_color">#FFFFFFFF</color>
+    <color name="rating_above_7">#FFFFFFFF</color>
 </resources>

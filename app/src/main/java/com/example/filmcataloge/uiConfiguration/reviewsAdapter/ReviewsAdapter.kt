@@ -50,6 +50,9 @@ class ReviewsAdapter() : RecyclerView.Adapter<ReviewsAdapter.ReviewsViewHolder>(
 
     override fun onBindViewHolder(holder: ReviewsViewHolder, position: Int) {
         val review = reviews[position]
+        if (position >= 1){
+            holder.itemView.setPadding(100, 0, 0, 0)
+        }
         holder.bind(review)
     }
 

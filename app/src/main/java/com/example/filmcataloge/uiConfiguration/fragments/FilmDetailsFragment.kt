@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,7 +39,7 @@ import kotlinx.coroutines.withContext
 
 class FilmDetailsFragment : Fragment() {
 
-    private lateinit var binding: FragmentFilmDetailsFragmentBinding
+    lateinit var binding: FragmentFilmDetailsFragmentBinding
     private var filmID: Int? = null
     private lateinit var viewModel: FilmDetailsViewModel
     private lateinit var dataStoreManager: DataStoreManager
@@ -78,7 +79,48 @@ class FilmDetailsFragment : Fragment() {
             startActivity(shareIntent)
         }
 
+        binding.moreOptions.setOnClickListener {
+
+            val moreOptionsFragment = MoreOptionsButtonFragment.newInstance(filmID!!)
+            val fragmentManager: FragmentManager = requireActivity().supportFragmentManager
+
+            switchMainInterfaceCondition(false)
+            fragmentManager.beginTransaction()
+                .add(R.id.moreOptionsFragmentHolder, moreOptionsFragment)
+                .addToBackStack(null).commit()
+        }
+
+        viewModel.moreOptionsFragmentClosed.observe(
+            viewLifecycleOwner, {
+                switchMainInterfaceCondition(true)
+            }
+        )
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        (activity as MainActivity).hideFilmDetailsFragment(viewModel.previousFragment.value.toString())
+    }
+
+    private fun switchMainInterfaceCondition(isEnabled: Boolean) {
+
+
+        binding.touchBlockerOverlay.visibility = if (isEnabled) View.GONE else View.VISIBLE
+
+        binding.scrollView.isClickable = isEnabled
+        binding.scrollView.isEnabled = isEnabled
+        binding.mainFilmDetailsLayout.isClickable = isEnabled
+        binding.mainFilmDetailsLayout.isEnabled = isEnabled
+
+        binding.addToFavoriteButton.isEnabled = isEnabled
+        binding.addToWatchlistButton.isEnabled = isEnabled
+        binding.shareButton.isEnabled = isEnabled
+        binding.moreOptions.isEnabled = isEnabled
+        binding.backFromFilmDetails.isEnabled = isEnabled
+
+        binding.moreOptionsFragmentHolder.visibility = if (isEnabled) View.GONE else View.VISIBLE
+    }
+
 
     private fun handleCollectionButton(type: CollectionsRepository.CollectionType) {
         lifecycleScope.launch {
@@ -110,7 +152,6 @@ class FilmDetailsFragment : Fragment() {
                     updateButtonUI(type, !isInCollection)
                     when (type) {
                         CollectionsRepository.CollectionType.FAVORITE -> viewModel.notifyFavoriteMoviesUpdated()
-
                         CollectionsRepository.CollectionType.WATCHLIST -> viewModel.notifyWatchLaterMoviesUpdated()
                     }
                     val action = if (!isInCollection) "added to" else "removed from"
@@ -264,7 +305,7 @@ class FilmDetailsFragment : Fragment() {
             val rating = MovieUtils.formatRating(movieDetails.vote_average)
 
             ratingOfFilm.text = rating.toString()
-            ratingOfFilm.setTextColor(MovieUtils.getRatingColor(requireContext(), rating))
+            ratingOfFilm.setTextColor(MovieUtils.getRatingBackgroundColor(requireContext(), rating))
 
             val date = movieDetails.release_date.split("-")
             val year = date[0]
@@ -274,7 +315,7 @@ class FilmDetailsFragment : Fragment() {
             val duration = MovieUtils.formatDuration(movieDetails.runtime)
 
             val mainDescription =
-                ("${year}, $genres \n ${movieDetails.production_countries[0].name} ${duration} min" + "${if (movieDetails.adult) "18+" else ""}")
+                ("${year}, $genres \n ${movieDetails.production_countries[0].name} ${duration}${if (movieDetails.adult) ", 18+" else ""}")
 
             binding.reviewsCounter.text = movieDetails.vote_count.toString()
             filmMainDetails.text = mainDescription

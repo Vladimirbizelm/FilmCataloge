@@ -33,6 +33,15 @@ object MovieUtils {
             else -> ContextCompat.getColor(context, R.color.rating_under_3_color)
         }
     }
+    fun getRatingBackgroundColor(context: Context, rating: Double): Int {
+        return when (rating) {
+            in 0.0..3.0 -> ContextCompat.getColor(context, R.color.rating_background_under_3_color)
+            in 3.1..5.0 -> ContextCompat.getColor(context, R.color.rating_background_3_to_5_color)
+            in 5.1..7.0 -> ContextCompat.getColor(context, R.color.rating_background_5_to_7_color)
+            in 7.1..10.0 -> ContextCompat.getColor(context, R.color.rating_background_above_7)
+            else -> ContextCompat.getColor(context, R.color.rating_background_under_3_color)
+        }
+    }
     fun formatGenres(genres: List<Genre>): String {
         return genres.take(2).joinToString (", ") { it.name }
     }
