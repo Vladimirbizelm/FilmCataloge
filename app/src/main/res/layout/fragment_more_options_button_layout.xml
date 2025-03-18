@@ -78,7 +78,7 @@
                 android:src="@drawable/add_to_watched"/>
             <TextView
                 android:layout_gravity="center"
-                android:text="coming soon"
+                android:text="@string/viewed_item"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </LinearLayout>

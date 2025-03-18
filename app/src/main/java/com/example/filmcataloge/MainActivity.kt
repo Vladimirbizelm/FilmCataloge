@@ -3,7 +3,6 @@ package com.example.filmcataloge
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -18,7 +17,7 @@ import com.example.filmcataloge.uiConfiguration.fragments.ProfileFragment
 import com.example.filmcataloge.uiConfiguration.fragments.SearchFragment
 import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
 
-const val API_KEY = "9d84a8a1e699e305c54c15e454163cda"
+
 
 
 // TODO: (set up an adapter for recyclerViews), change style for buttons, (add some fragments)
@@ -49,9 +48,8 @@ const val API_KEY = "9d84a8a1e699e305c54c15e454163cda"
 // TODO: add fragment for more options button in movie detail fragment
 
 // TODO: add splash screen - fix it
+// TODO: profile fragment change login password from tests
 
-
-// TODO: profile fragment change login password from tests 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
 
 class MainActivity : AppCompatActivity() {

@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.filmcataloge.API_KEY
 import com.example.filmcataloge.MainActivity
 import com.example.filmcataloge.databinding.FragmentMainPageBinding
 import com.example.filmcataloge.netConfiguration.API
@@ -20,6 +19,7 @@ import com.example.filmcataloge.uiConfiguration.moviesAdapter.MainRVAdapter
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.NestedRVAdapter
 import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
 import com.example.filmcataloge.utils.CollectionsRepository
+import com.example.filmcataloge.utils.Constants
 import com.example.filmcataloge.utils.MovieUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +52,7 @@ class MainPageFragment : Fragment() {
         val api = RetrofitClient.api
         val adapter = setUpAdapter()
         getMoviesForMainPage(api, adapter)
+        Log.d("MainPageFragment", "onCreateView ${Constants.API_KEY}")
 
         return binding.root
     }
@@ -84,8 +85,8 @@ class MainPageFragment : Fragment() {
     private fun getMoviesForMainPage(api: API, adapter: MainRVAdapter) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val popularMoviesResponse = async { api.getPopularMovies(API_KEY) }
-                val topRatedMovieResponse = async { api.getTopRatedMovies(API_KEY) }
+                val popularMoviesResponse = async { api.getPopularMovies(Constants.API_KEY) }
+                val topRatedMovieResponse = async { api.getTopRatedMovies(Constants.API_KEY) }
 
                 val popularMoviesDeferred = popularMoviesResponse.await()
                 val topRatedMoviesDeferred = topRatedMovieResponse.await()

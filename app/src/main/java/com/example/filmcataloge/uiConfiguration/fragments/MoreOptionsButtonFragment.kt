@@ -1,20 +1,15 @@
 package com.example.filmcataloge.uiConfiguration.fragments
 
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.filmcataloge.API_KEY
 import com.example.filmcataloge.R
 import com.example.filmcataloge.databinding.FragmentMoreOptionsButtonLayoutBinding
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.createCustomList.CreateCustomListRequest
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.getListOfCustomLists.GetListOfCustomListsResponse
-import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.getListOfCustomLists.ListObject
 import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.dataStoreManager.DataStoreManager
 import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
@@ -74,12 +69,12 @@ class MoreOptionsButtonFragment : Fragment() {
                 list?.id?.let { listId ->
                     val movieId = filmID
                     if (collectionsRepository.isMovieInCustomList(listId, movieId!!)){
-                        collectionsRepository.removeMovieFromCustomList(listId!!, movieId!!)
+                        collectionsRepository.removeMovieFromCustomList(listId, movieId)
                         Toast.makeText(requireContext(), "Фильм уже добавлен в список Watched", Toast.LENGTH_SHORT).show()
                         binding.addToWatchedButton.setImageResource(R.drawable.add_to_watched)
                         return@launch
                     } else {
-                        collectionsRepository.addMovieToCustomList(listId, movieId!!)
+                        collectionsRepository.addMovieToCustomList(listId, movieId)
                         Toast.makeText(requireContext(), "Фильм добавлен в список Watched", Toast.LENGTH_SHORT).show()
                         binding.addToWatchedButton.setImageResource(R.drawable.added_to_watched)
                     }

@@ -3,7 +3,6 @@ package com.example.filmcataloge.utils
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import com.example.filmcataloge.API_KEY
 import com.example.filmcataloge.netConfiguration.API
 import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToFavorite.AddToFavoriteRequest
 import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToWatchList.AddToWatchListRequest
@@ -15,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+
+private const val API_KEY = Constants.API_KEY
 
 class CollectionsRepository(
     private val api: API,

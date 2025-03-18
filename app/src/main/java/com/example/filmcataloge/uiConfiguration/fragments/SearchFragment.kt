@@ -10,8 +10,6 @@ import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.room.util.query
-import com.example.filmcataloge.API_KEY
 import com.example.filmcataloge.MainActivity
 
 import com.example.filmcataloge.databinding.FragmentSearchBinding
@@ -20,6 +18,7 @@ import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.popularMovies.Movie
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.SearchFilmsAdapter
 import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
+import com.example.filmcataloge.utils.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -86,7 +85,7 @@ class SearchFragment : Fragment() {
 
     private fun getMoviesByTitle(title: String, adapter: SearchFilmsAdapter, api: API) {
         CoroutineScope(Dispatchers.IO).launch {
-            val movies = async { api.searchMovies(title, "en-US", 1, API_KEY) }
+            val movies = async { api.searchMovies(title, "en-US", 1, Constants.API_KEY) }
             val moviesDeferred = movies.await()
             val listOfPopularMovies: ArrayList<Movie> = moviesDeferred.results
             listOfPopularMovies.forEach {

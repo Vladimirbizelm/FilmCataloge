@@ -1,7 +1,10 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
+
 
 android {
     namespace = "com.example.filmcataloge"
@@ -13,8 +16,19 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        val tmdbApiKey = if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+            localProperties.getProperty("TMDB_API_KEY", "")
+        } else {
+            ""
+        }
+        buildConfigField("String", "TMDB_API_KEY", "\"$tmdbApiKey\"")
+
+
     }
 
     buildTypes {
@@ -35,6 +49,7 @@ android {
     }
     buildFeatures{
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -50,9 +65,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
-    //datastore (like shared preferences) to store auth token
     implementation ("androidx.datastore:datastore-preferences:1.1.2")
-
     
     annotationProcessor ("androidx.room:room-compiler:2.5.2")
     implementation("androidx.room:room-runtime:2.6.1")

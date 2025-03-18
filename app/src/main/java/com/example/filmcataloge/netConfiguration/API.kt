@@ -17,16 +17,16 @@ import com.example.filmcataloge.netConfiguration.movieDetais.MovieDetails
 import com.example.filmcataloge.netConfiguration.popularMovies.MoviesResponse
 import com.example.filmcataloge.netConfiguration.recommendedFilms.RecommendedFilms
 import com.example.filmcataloge.netConfiguration.reviewDetails.ReviewDetails
+import com.example.filmcataloge.utils.Constants
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-const val API_KEY = "9d84a8a1e699e305c54c15e454163cda"
+const val API_KEY = Constants.API_KEY
 
 interface API {
-
     //main page requests
     @GET("movie/popular?language=en-US&page=1")
     suspend fun getPopularMovies(@Query("api_key") api_key: String = API_KEY): MoviesResponse
