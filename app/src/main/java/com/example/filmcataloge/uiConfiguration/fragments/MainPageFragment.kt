@@ -74,7 +74,7 @@ class MainPageFragment : Fragment() {
             setNestedItemClickListener(object : NestedRVAdapter.OnItemClickListener {
                 override fun onItemClick(position: Int, movie: Movie) {
                     viewModel.previousFragment.value = "home"
-                    (activity as MainActivity).showFilmDetailsFragment(movie.id)
+                    (activity as MainActivity).showFilmDetailsFragment(movie)
                 }
             })
         }

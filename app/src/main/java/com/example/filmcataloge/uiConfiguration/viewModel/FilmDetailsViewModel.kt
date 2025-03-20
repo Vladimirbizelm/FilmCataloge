@@ -32,5 +32,10 @@ class FilmDetailsViewModel : ViewModel() {
     fun notifyMoreOptionsFragmentClosed() {
         _moreOptionsFragmentClosed.value = Event(true)
     }
+    private val _historyUpdated = MutableLiveData<Event<Boolean>>()
+    val historyUpdated: LiveData<Event<Boolean>> = _historyUpdated
+    fun historyUpdated() {
+        _historyUpdated.value = Event(true)
+    }
 
 }

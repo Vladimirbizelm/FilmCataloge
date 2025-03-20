@@ -149,7 +149,7 @@ class FavoritesFragment : Fragment() {
         adapter.setNestedItemClickListener(object : NestedRVAdapter.OnItemClickListener {
             override fun onItemClick(position: Int, movie: Movie) {
                 filmDetailsViewModel.previousFragment.value = "favorites"
-                (activity as MainActivity).showFilmDetailsFragment(movie.id)
+                (activity as MainActivity).showFilmDetailsFragment(movie)
             }
         })
         return adapter

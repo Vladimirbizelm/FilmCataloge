@@ -6,6 +6,7 @@ import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.
 import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.basicLists.addToWatchList.AddToWatchListResponse
 import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.AddRemoveMovieToListResponse
 import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.CheckMovieInCustomListResponse
+import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.GetCustomListDetails
 import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.createCustomList.CreateCustomListRequest
 import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.createCustomList.CreateCustomListResponse
 import com.example.filmcataloge.netConfiguration.Lists.addToFavorite.customLists.getListOfCustomLists.GetListOfCustomListsResponse
@@ -155,6 +156,15 @@ interface API {
         @Query("movie_id") movieId: Int,
         @Query("session_id") sessionId: String
     ): CheckMovieInCustomListResponse
+
+    //get custom list details
+    @GET("list/{list_id}")
+    suspend fun getCustomListDetails(
+        @Path("list_id") listId: Int,
+        @Query("api_key") api_key: String,
+        @Query("session_id") sessionId: String,
+        @Query("language") language: String = "en-US"
+    ): GetCustomListDetails
 
 
 }

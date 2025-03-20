@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,154 +17,39 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.filmcataloge.MainActivity
 import com.example.filmcataloge.R
 import com.example.filmcataloge.databinding.FragmentFilmDetailsFragmentBinding
-import com.example.filmcataloge.netConfiguration.API
 import com.example.filmcataloge.netConfiguration.RetrofitClient
 import com.example.filmcataloge.netConfiguration.dataStoreManager.DataStoreManager
 import com.example.filmcataloge.netConfiguration.movieDetais.MovieDetails
 import com.example.filmcataloge.netConfiguration.popularMovies.Movie
-import com.example.filmcataloge.netConfiguration.reviewDetails.ReviewDetails
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.BASE_URL_FOR_IMAGES
 import com.example.filmcataloge.uiConfiguration.moviesAdapter.NestedRVAdapter
 import com.example.filmcataloge.uiConfiguration.reviewsAdapter.ReviewsAdapter
 import com.example.filmcataloge.uiConfiguration.viewModel.FilmDetailsViewModel
 import com.example.filmcataloge.utils.CollectionsRepository
 import com.example.filmcataloge.utils.MovieUtils
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// TODO: (set up RV), (adapter for reviews), actors, (recommended films )
-// TODO: add some images for films https://developer.themoviedb.org/reference/movie-images
-
 class FilmDetailsFragment : Fragment() {
 
-    lateinit var binding: FragmentFilmDetailsFragmentBinding
+    private lateinit var binding: FragmentFilmDetailsFragmentBinding
+    private val viewModel by lazy { ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java] }
+    private val dataStoreManager by lazy { DataStoreManager(requireContext()) }
+    private val collectionsRepository by lazy {
+        CollectionsRepository(RetrofitClient.api, dataStoreManager, requireContext())
+    }
+    private val api by lazy { RetrofitClient.api }
+
+    private lateinit var movie: Movie
     private var filmID: Int? = null
-    private lateinit var viewModel: FilmDetailsViewModel
-    private lateinit var dataStoreManager: DataStoreManager
-    private lateinit var collectionsRepository: CollectionsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        filmID = arguments?.getInt("filmID")
-        viewModel = ViewModelProvider(requireActivity())[FilmDetailsViewModel::class.java]
-        dataStoreManager = DataStoreManager(requireContext())
-        collectionsRepository =
-            CollectionsRepository(RetrofitClient.api, dataStoreManager, requireContext())
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.backFromFilmDetails.setOnClickListener {
-            (activity as MainActivity).hideFilmDetailsFragment(viewModel.previousFragment.value.toString())
-        }
-
-        binding.addToFavoriteButton.setOnClickListener {
-            handleCollectionButton(CollectionsRepository.CollectionType.FAVORITE)
-        }
-
-        binding.addToWatchlistButton.setOnClickListener {
-            handleCollectionButton(CollectionsRepository.CollectionType.WATCHLIST)
-        }
-
-        binding.shareButton.setOnClickListener {
-            val sendIntent: Intent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, "https://www.themoviedb.org/movie/$filmID")
-                type = "text/plain"
-            }
-            val shareIntent = Intent.createChooser(sendIntent, null)
-            startActivity(shareIntent)
-        }
-
-        binding.moreOptions.setOnClickListener {
-
-            val moreOptionsFragment = MoreOptionsButtonFragment.newInstance(filmID!!)
-            val fragmentManager: FragmentManager = requireActivity().supportFragmentManager
-
-            switchMainInterfaceCondition(false)
-            fragmentManager.beginTransaction()
-                .add(R.id.moreOptionsFragmentHolder, moreOptionsFragment)
-                .addToBackStack(null).commit()
-        }
-
-        viewModel.moreOptionsFragmentClosed.observe(
-            viewLifecycleOwner, {
-                switchMainInterfaceCondition(true)
-            }
-        )
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        (activity as MainActivity).hideFilmDetailsFragment(viewModel.previousFragment.value.toString())
-    }
-
-    private fun switchMainInterfaceCondition(isEnabled: Boolean) {
-
-
-        binding.touchBlockerOverlay.visibility = if (isEnabled) View.GONE else View.VISIBLE
-
-        binding.scrollView.isClickable = isEnabled
-        binding.scrollView.isEnabled = isEnabled
-        binding.mainFilmDetailsLayout.isClickable = isEnabled
-        binding.mainFilmDetailsLayout.isEnabled = isEnabled
-
-        binding.addToFavoriteButton.isEnabled = isEnabled
-        binding.addToWatchlistButton.isEnabled = isEnabled
-        binding.shareButton.isEnabled = isEnabled
-        binding.moreOptions.isEnabled = isEnabled
-        binding.backFromFilmDetails.isEnabled = isEnabled
-
-        binding.moreOptionsFragmentHolder.visibility = if (isEnabled) View.GONE else View.VISIBLE
-    }
-
-
-    private fun handleCollectionButton(type: CollectionsRepository.CollectionType) {
-        lifecycleScope.launch {
-            try {
-                val collections = collectionsRepository.loadCollections()
-                val isInCollection = when (type) {
-                    CollectionsRepository.CollectionType.FAVORITE -> collectionsRepository.isMovieInCollection(
-                        collections.favorites, filmID ?: 0
-                    )
-
-                    CollectionsRepository.CollectionType.WATCHLIST -> collectionsRepository.isMovieInCollection(
-                        collections.watchlist, filmID ?: 0
-                    )
-                }
-
-                val success = when (type) {
-                    CollectionsRepository.CollectionType.FAVORITE -> collectionsRepository.toggleFavorite(
-                        filmID ?: 0,
-                        isInCollection
-                    )
-
-                    CollectionsRepository.CollectionType.WATCHLIST -> collectionsRepository.toggleWatchlist(
-                        filmID ?: 0,
-                        isInCollection
-                    )
-                }
-
-                if (success) {
-                    updateButtonUI(type, !isInCollection)
-                    when (type) {
-                        CollectionsRepository.CollectionType.FAVORITE -> viewModel.notifyFavoriteMoviesUpdated()
-                        CollectionsRepository.CollectionType.WATCHLIST -> viewModel.notifyWatchLaterMoviesUpdated()
-                    }
-                    val action = if (!isInCollection) "added to" else "removed from"
-                    val typeName =
-                        if (type == CollectionsRepository.CollectionType.FAVORITE) "favorite" else "watchlist"
-                    Toast.makeText(
-                        requireContext(), "Successfully $action $typeName", Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } catch (e: Exception) {
-                Log.e("FilmDetailsFragment", "Error handling collection button", e)
-                Toast.makeText(requireContext(), "Error updating collection", Toast.LENGTH_SHORT)
-                    .show()
-            }
+        arguments?.getString("movie")?.let {
+            movie = Gson().fromJson(it, Movie::class.java)
+            filmID = movie.id
         }
     }
 
@@ -173,75 +57,209 @@ class FilmDetailsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentFilmDetailsFragmentBinding.inflate(inflater, container, false)
-        restoreOrCreateFragmentView(inflater, container, RetrofitClient.api)
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupClickListeners()
+        setupObservers()
+        setupRecyclerViews()
+        loadMovieData()
+        updateCollectionsButtonsUI()
+    }
 
-    private fun restoreOrCreateFragmentView(
-        inflater: LayoutInflater, container: ViewGroup?, api: API
-    ) {
-        binding = FragmentFilmDetailsFragmentBinding.inflate(inflater, container, false)
-        val recommendedFilmsAdapter = NestedRVAdapter()
-        binding.reviewsRV.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        val reviewsAdapter = ReviewsAdapter()
-        binding.reviewsRV.adapter = reviewsAdapter
+    override fun onDestroy() {
+        super.onDestroy()
+        val previousFragment = viewModel.previousFragment.value.toString()
+        Log.d("FilmDetailsFragment", "onDestroy $previousFragment")
+        (activity as? MainActivity)?.hideFilmDetailsFragment(previousFragment)
+    }
 
-        binding.recommendedFilmsRV.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        binding.recommendedFilmsRV.adapter = recommendedFilmsAdapter
+    private fun setupObservers() {
+        viewModel.moreOptionsFragmentClosed.observe(viewLifecycleOwner) {
+            switchMainInterfaceCondition(true)
+        }
+    }
 
-        filmID?.let { id ->
-            lifecycleScope.launch {
-                val reviews = getMovieReviews(id, api)
-                reviews?.let {
-                    reviewsAdapter.setReviews(it.results)
-                }
+    private fun setupClickListeners() {
+        with(binding) {
+            backFromFilmDetails.setOnClickListener {
+                (activity as? MainActivity)?.hideFilmDetailsFragment(viewModel.previousFragment.value.toString())
             }
-            lifecycleScope.launch {
-                val recommendedMovies = getMovieRecommendations(id, api)
-                recommendedMovies?.let {
-                    recommendedFilmsAdapter.setMovies(it)
-                }
-            }
-            lifecycleScope.launch {
-                val movieDetails = fetchMovieDetails(id, api)
-                movieDetails?.let { updateUI(it) }
 
+            addToFavoriteButton.setOnClickListener {
+                handleCollectionButton(CollectionsRepository.CollectionType.FAVORITE)
+            }
+
+            addToWatchlistButton.setOnClickListener {
+                handleCollectionButton(CollectionsRepository.CollectionType.WATCHLIST)
+            }
+
+            shareButton.setOnClickListener {
+                shareMovie()
+            }
+
+            moreOptions.setOnClickListener {
+                showMoreOptionsFragment()
             }
         }
+    }
 
-        updateCollectionsButtonsUI()
+    private fun setupRecyclerViews() {
+        val recommendedFilmsAdapter = NestedRVAdapter().apply {
+            setListener(object : NestedRVAdapter.OnItemClickListener {
+                override fun onItemClick(position: Int, movie: Movie) {
+                    viewModel.previousFragment.value = "favorites"
+                    (activity as? MainActivity)?.showFilmDetailsFragment(movie)
+                }
+            })
+        }
+        binding.recommendedFilmsRV.apply {
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = recommendedFilmsAdapter
+        }
 
-        recommendedFilmsAdapter.setListener(object : NestedRVAdapter.OnItemClickListener {
-            override fun onItemClick(position: Int, movie: Movie) {
-                viewModel.previousFragment.value = "favorites"
-                (activity as MainActivity).showFilmDetailsFragment(movie.id)
+        binding.reviewsRV.apply {
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = ReviewsAdapter()
+        }
+    }
+
+    private fun loadMovieData() {
+        filmID?.let { id ->
+            lifecycleScope.launch {
+                getMovieReviews(id)?.let { reviews ->
+                    (binding.reviewsRV.adapter as? ReviewsAdapter)?.setReviews(reviews.results)
+                }
+
+                getMovieRecommendations(id)?.let { movies ->
+                    (binding.recommendedFilmsRV.adapter as? NestedRVAdapter)?.setMovies(movies)
+                }
+
+                fetchMovieDetails(id)?.let { details ->
+                    updateUI(details)
+                }
             }
-        })
+        }
+    }
 
+    private fun shareMovie() {
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "https://www.themoviedb.org/movie/$filmID")
+            type = "text/plain"
+        }
+        startActivity(Intent.createChooser(sendIntent, null))
+    }
+
+    private fun showMoreOptionsFragment() {
+        val moreOptionsFragment = MoreOptionsButtonFragment.newInstance(movie)
+        switchMainInterfaceCondition(false)
+        requireActivity().supportFragmentManager.beginTransaction()
+            .add(R.id.moreOptionsFragmentHolder, moreOptionsFragment)
+            .addToBackStack(null).commit()
+    }
+
+    private fun switchMainInterfaceCondition(isEnabled: Boolean) {
+        with(binding) {
+            touchBlockerOverlay.visibility = if (isEnabled) View.GONE else View.VISIBLE
+            moreOptionsFragmentHolder.visibility = if (isEnabled) View.GONE else View.VISIBLE
+
+            scrollView.apply {
+                isClickable = isEnabled
+                this.isEnabled = isEnabled
+            }
+            mainFilmDetailsLayout.apply {
+                isClickable = isEnabled
+                this.isEnabled = isEnabled
+            }
+
+            listOf(
+                addToFavoriteButton,
+                addToWatchlistButton,
+                shareButton,
+                moreOptions,
+                backFromFilmDetails
+            ).forEach { it.isEnabled = isEnabled }
+        }
+    }
+
+    private fun handleCollectionButton(type: CollectionsRepository.CollectionType) {
+        lifecycleScope.launch {
+            try {
+                val collections = collectionsRepository.loadCollections()
+                val isInCollection = when (type) {
+                    CollectionsRepository.CollectionType.FAVORITE ->
+                        collectionsRepository.isMovieInCollection(
+                            collections.favorites,
+                            filmID ?: 0
+                        )
+
+                    CollectionsRepository.CollectionType.WATCHLIST ->
+                        collectionsRepository.isMovieInCollection(
+                            collections.watchlist,
+                            filmID ?: 0
+                        )
+                }
+
+                val success = when (type) {
+                    CollectionsRepository.CollectionType.FAVORITE ->
+                        collectionsRepository.toggleFavorite(filmID ?: 0, isInCollection)
+
+                    CollectionsRepository.CollectionType.WATCHLIST ->
+                        collectionsRepository.toggleWatchlist(filmID ?: 0, isInCollection)
+                }
+
+                if (success) {
+                    updateButtonUI(type, !isInCollection)
+
+                    when (type) {
+                        CollectionsRepository.CollectionType.FAVORITE -> viewModel.notifyFavoriteMoviesUpdated()
+                        CollectionsRepository.CollectionType.WATCHLIST -> viewModel.notifyWatchLaterMoviesUpdated()
+                    }
+
+                    val action = if (!isInCollection) getString(R.string.added_to) else getString(R.string.deleted_from)
+                    val typeName = if (type == CollectionsRepository.CollectionType.FAVORITE)
+                        getString(R.string.favorites) else "${R.string.watch_later}"
+                    Toast.makeText(
+                        requireContext(), "${getString(R.string.successfully)} $action $typeName", Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Log.e("FilmDetailsFragment", getString(R.string.error_loading_collections), e)
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.error_loading_collections),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 
     private fun updateCollectionsButtonsUI() {
         lifecycleScope.launch {
             try {
                 val collections = collectionsRepository.loadCollections()
-                val inFavorites =
+                updateButtonUI(
+                    CollectionsRepository.CollectionType.FAVORITE,
                     collectionsRepository.isMovieInCollection(collections.favorites, filmID ?: 0)
-                val inWatchList =
+                )
+                updateButtonUI(
+                    CollectionsRepository.CollectionType.WATCHLIST,
                     collectionsRepository.isMovieInCollection(collections.watchlist, filmID ?: 0)
-
-                updateButtonUI(CollectionsRepository.CollectionType.FAVORITE, inFavorites)
-                updateButtonUI(CollectionsRepository.CollectionType.WATCHLIST, inWatchList)
+                )
             } catch (e: Exception) {
-                Log.e("FilmDetailsFragment", "Error updating collection buttons", e)
+                Log.e("FilmDetailsFragment", "error loading buttons ui", e)
             }
         }
     }
 
     private fun updateButtonUI(
-        type: CollectionsRepository.CollectionType, isInCollection: Boolean
+        type: CollectionsRepository.CollectionType,
+        isInCollection: Boolean
     ) {
         when (type) {
             CollectionsRepository.CollectionType.FAVORITE -> {
@@ -258,81 +276,76 @@ class FilmDetailsFragment : Fragment() {
         }
     }
 
-    private suspend fun getMovieRecommendations(movieId: Int, api: API): List<Movie>? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val recommendedFilms = api.getRecommendedMoviesForThisMovieByID(movieId).results
-                MovieUtils.formatMoviesList(recommendedFilms)
-            } catch (e: Exception) {
-                Log.e("film_details_fragment", "Error fetching movie recommendations", e)
-                null
-            }
+    private suspend fun getMovieRecommendations(movieId: Int) = withContext(Dispatchers.IO) {
+        try {
+            val recommendedFilms = api.getRecommendedMoviesForThisMovieByID(movieId).results
+            MovieUtils.formatMoviesList(recommendedFilms)
+        } catch (e: Exception) {
+            Log.e("FilmDetailsFragment", getString(R.string.error_loading_recommendations), e)
+            null
         }
     }
 
-    private suspend fun getMovieReviews(movieId: Int, api: API): ReviewDetails? {
-        return withContext(Dispatchers.IO) {
-            try {
-                api.getMovieReviews(movieId)
-            } catch (e: Exception) {
-                Log.e("film_details_fragment", "Error fetching movie reviews", e)
-                null
-            }
+    private suspend fun getMovieReviews(movieId: Int) = withContext(Dispatchers.IO) {
+        try {
+            api.getMovieReviews(movieId)
+        } catch (e: Exception) {
+            Log.e("FilmDetailsFragment", getString(R.string.error_loading_reviews), e)
+            null
         }
     }
 
-    private suspend fun fetchMovieDetails(movieId: Int, api: API): MovieDetails? {
-        return withContext(Dispatchers.IO) {
-            try {
-                api.getMovieDetails(movieId)
-            } catch (e: Exception) {
-                Log.e("film_details_fragment", "Error fetching movie details", e)
-                null
-            }
+    private suspend fun fetchMovieDetails(movieId: Int) = withContext(Dispatchers.IO) {
+        try {
+            api.getMovieDetails(movieId)
+        } catch (e: Exception) {
+            Log.e("FilmDetailsFragment", getString(R.string.error_loading_film_details), e)
+            null
         }
     }
 
     private fun updateUI(movieDetails: MovieDetails) {
-        binding.apply {
-            val requestOptions =
-                RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL).override(300, 450)
-                    .placeholder(R.drawable.loading).error(R.drawable.loading)
-            Glide.with(this@FilmDetailsFragment)
-                .load(BASE_URL_FOR_IMAGES + movieDetails.poster_path).apply(requestOptions)
-                .apply(requestOptions).into(filmPoster)
+        with(binding) {
+            val requestOptions = RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .override(300, 450)
+                .placeholder(R.drawable.loading)
+                .error(R.drawable.loading)
+
+            Glide.with(requireContext())
+                .load(BASE_URL_FOR_IMAGES + movieDetails.poster_path)
+                .apply(requestOptions)
+                .into(filmPoster)
+
             filmName.text = movieDetails.title
 
             val rating = MovieUtils.formatRating(movieDetails.vote_average)
-
             ratingOfFilm.text = rating.toString()
             ratingOfFilm.setTextColor(MovieUtils.getRatingBackgroundColor(requireContext(), rating))
 
-            val date = movieDetails.release_date.split("-")
-            val year = date[0]
-
+            val year = movieDetails.release_date.split("-")[0]
             val genres = MovieUtils.formatGenres(movieDetails.genres)
-
             val duration = MovieUtils.formatDuration(movieDetails.runtime)
+            val ageRestriction = if (movieDetails.adult) ", 18+" else ""
 
-            val mainDescription =
-                ("${year}, $genres \n ${movieDetails.production_countries[0].name} ${duration}${if (movieDetails.adult) ", 18+" else ""}")
+            val countryName = if (movieDetails.production_countries.isNotEmpty())
+                movieDetails.production_countries[0].name else ""
 
-            binding.reviewsCounter.text = movieDetails.vote_count.toString()
-            filmMainDetails.text = mainDescription
+            val mainDetailsString = "$year, $genres \n$countryName $duration$ageRestriction"
+            filmMainDetails.text = mainDetailsString
+            reviewsCounter.text = movieDetails.vote_count.toString()
             description.text = movieDetails.overview
-
         }
     }
+
+
 
     companion object {
         @JvmStatic
-        fun newInstance(filmID: Int): FilmDetailsFragment {
-            val fragment = FilmDetailsFragment()
-            val args = Bundle()
-            args.putInt("filmID", filmID)
-            fragment.arguments = args
-            return fragment
+        fun newInstance(movie: Movie) = FilmDetailsFragment().apply {
+            arguments = Bundle().apply {
+                putString("movie", Gson().toJson(movie))
+            }
         }
     }
-
 }

@@ -152,6 +152,18 @@ class CollectionsRepository(
         )
     }
 
+    suspend fun getCustomListDetails(listId: Int): List<Movie>? {
+        return handleApiCall("getCustomListDetails") {
+            val sessionId = dataStoreManager.getSessionId() ?: return@handleApiCall emptyList()
+            val response = api.getCustomListDetails(
+                listId = listId,
+                api_key = API_KEY,
+                sessionId = sessionId
+            )
+            response.items
+        } ?: emptyList<Movie>()
+    }
+
     private suspend fun manageCollection(
         movieId: Int,
         isInCollection: Boolean,

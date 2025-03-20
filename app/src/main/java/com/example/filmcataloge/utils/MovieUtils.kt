@@ -23,6 +23,11 @@ object MovieUtils {
             it.apply { vote_average = formatRating(vote_average) }
         }
     }
+    fun formatMovieDate(movie: List<Movie>): List<Movie>{
+        return movie.map {
+            it.apply { release_date = it.release_date.substring(0,4) }
+        }
+    }
 
     fun getRatingColor(context: Context, rating: Double): Int {
         return when (rating) {
